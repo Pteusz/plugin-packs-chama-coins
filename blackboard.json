@@ -7,7 +7,12 @@
     "decay_hours": 24
   },
   "phases": {
-    "espaco":        { "status": "idle", "next": "esqueleto",     "translation": "", "updated_at": "" },
+    "espaco": {
+      "status": "locked",
+      "next": "esqueleto",
+      "updated_at": "2026-05-09T00:00:00Z",
+      "translation": "Instrução: Criar a estrutura de diretórios e arquivos vazios do plugin dentro do diretório /workspace/plugin-packs-chama-coins/. Estrutura exata:\n\n plugin-packs-chama-coins.php (arquivo vazio na raiz)\n includes/class-activator.php\n includes/class-crud.php\n includes/class-session.php\n includes/class-wc-bridge.php\n includes/class-api.php\n admin/class-admin-page.php\n admin/admin.js\n public/class-store-page.php\n public/store.js\n assets/style.css\n\nTodos os arquivos devem ser criados vazios (0 bytes ou apenas comentário de abertura PHP onde aplicável). Não escrever nenhum código de implementação — apenas criar os arquivos no lugar certo.\n\nVerificação: Listar todos os arquivos criados com `find . -type f | sort` e confirmar que os 11 arquivos existem nos caminhos corretos, excluindo .git e _plugins."
+    },
     "esqueleto":     { "status": "idle", "next": "contratos",     "translation": "", "updated_at": "" },
     "contratos":     { "status": "idle", "next": "configuracao",  "translation": "", "updated_at": "" },
     "configuracao":  { "status": "idle", "next": "fluxo",         "translation": "", "updated_at": "" },
