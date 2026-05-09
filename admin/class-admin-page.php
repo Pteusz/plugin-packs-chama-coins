@@ -73,6 +73,7 @@ class CC_Packs_Admin_Page {
         global $post;
         if ( ! is_a( $post, 'WP_Post' ) ) return;
         if ( ! has_shortcode( $post->post_content, 'cc_packs_admin' ) ) return;
+
         wp_enqueue_script(
             'cc-packs-admin',
             CC_PACKS_URL . 'admin/admin.js',
@@ -80,10 +81,27 @@ class CC_Packs_Admin_Page {
             CC_PACKS_VERSION,
             true
         );
+
         wp_localize_script( 'cc-packs-admin', 'ccPacksAdmin', [
             'apiUrl'  => rest_url( CC_PACKS_API_NS ),
             'nonce'   => wp_create_nonce( 'wp_rest' ),
             'sbcFeed' => home_url( CC_PACKS_SBC_FEED ),
         ] );
+
+        // Sessões do ADM enriquecidas com dados do comprador
+        $raw_sessions = CC_Packs_Session::get_by_adm( get_current_user_id() );
+
+        $sessions = array_map( function( $s ) {
+            $uid   = intval( $s['user_id'] );
+            $user  = get_userdata( $uid );
+            $phone = get_user_meta( $uid, 'billing_phone', true );
+            if ( ! $phone ) $phone = get_user_meta( $uid, 'phone', true );
+
+            $s['buyer_name'] = $user ? $user->display_name : 'Usuário #' . $uid;
+            $s['phone']      = sanitize_text_field( $phone ?: '' );
+            return $s;
+        }, $raw_sessions );
+
+        wp_localize_script( 'cc-packs-admin', 'ccPacksAdminSessions', $sessions );
     }
 }
