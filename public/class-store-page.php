@@ -72,7 +72,7 @@ class CC_Packs_Store_Page {
         );
         wp_localize_script( 'cc-packs-store', 'ccPacksStore', [
             'apiUrl'  => rest_url( CC_PACKS_API_NS ),
-            'nonce'   => wp_create_nonce( CC_PACKS_NONCE_ACTION ),
+            'nonce'   => wp_create_nonce( 'wp_rest' ),
             'sbcFeed' => home_url( CC_PACKS_SBC_FEED ),
         ] );
     }
