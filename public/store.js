@@ -3,10 +3,10 @@
 
     if (!window.ccPacksStore) return;
 
-    var api      = ccPacksStore.apiUrl;
-    var nonce    = ccPacksStore.nonce;
-    var sbcFeed  = ccPacksStore.sbcFeed;
-    var selected  = {};   // pack_id → true/false (toggle)
+    var api        = ccPacksStore.apiUrl;
+    var nonce      = ccPacksStore.nonce;
+    var sbcFeed    = ccPacksStore.sbcFeed;
+    var selected   = {};
     var packsCache = [];
     var feedCache  = null;
 
@@ -34,7 +34,7 @@
         return '';
     }
 
-    /* ---- barra inferior ---- */
+    /* ── barra inferior ── */
     function updateBar() {
         var ids   = Object.keys(selected).filter(function (k) { return selected[k]; });
         var total = 0;
@@ -54,7 +54,7 @@
         }
     }
 
-    /* ---- grid de packs ---- */
+    /* ── grid ── */
     function renderGrid(packs) {
         var $grid = $('#cc-store-grid');
         $grid.empty();
@@ -68,7 +68,7 @@
             var $card = $(
                 '<article class="cc-pack-card" data-pack-id="' + pid + '">' +
                 '  <div class="cc-pack-cover" data-pack-id="' + pid + '">' +
-                '    <div class="cc-cover-loading"><span></span><span></span><span></span></div>' +
+                '    <div class="cc-cover-shimmer"></div>' +
                 '  </div>' +
                 '  <div class="cc-pack-body">' +
                 '    <h3 class="cc-pack-name">' + pack.name + '</h3>' +
@@ -85,29 +85,31 @@
         });
     }
 
+    /* usa a primeira thumb disponível como imagem de capa */
     function fillCover(packId, dmeIds) {
         var $cover = $('.cc-pack-cover[data-pack-id="' + packId + '"]');
-        if (!dmeIds.length) { $cover.html('<div class="cc-cover-empty"></div>'); return; }
+        if (!dmeIds.length) { $cover.addClass('cc-cover-empty').empty(); return; }
+
         getFeed().then(function (items) {
             var ids   = dmeIds.map(String);
             var found = items.filter(function (d) { return ids.indexOf(String(d.id)) !== -1; });
-            $cover.empty();
-            found.slice(0, 4).forEach(function (dme) {
-                var src = thumbFor(dme);
-                if (src) $cover.append('<img class="cc-cover-img" src="' + src + '" alt="' + (dme.name || '') + '">');
-            });
-            if (!$cover.children().length) $cover.html('<div class="cc-cover-empty"></div>');
+            var src   = '';
+            for (var i = 0; i < found.length; i++) {
+                src = thumbFor(found[i]);
+                if (src) break;
+            }
+            if (!src) { $cover.addClass('cc-cover-empty').empty(); return; }
+            $cover.empty().html('<img class="cc-cover-img" src="' + src + '" alt="">');
+        }).catch(function () {
+            $cover.addClass('cc-cover-empty').empty();
         });
     }
 
-    /* ---- toggle adicionar / remover ---- */
+    /* ── toggle adicionar / remover ── */
     $(document).on('click', '.cc-btn-add', function () {
         var pid = String($(this).data('pack-id'));
         selected[pid] = true;
-        $(this)
-            .text('Remover')
-            .removeClass('cc-btn-add')
-            .addClass('cc-btn-remove');
+        $(this).text('Remover').removeClass('cc-btn-add').addClass('cc-btn-remove');
         $('.cc-pack-card[data-pack-id="' + pid + '"]').addClass('is-selected');
         updateBar();
     });
@@ -115,15 +117,12 @@
     $(document).on('click', '.cc-btn-remove', function () {
         var pid = String($(this).data('pack-id'));
         selected[pid] = false;
-        $(this)
-            .text('Adicionar')
-            .removeClass('cc-btn-remove')
-            .addClass('cc-btn-add');
+        $(this).text('Adicionar').removeClass('cc-btn-remove').addClass('cc-btn-add');
         $('.cc-pack-card[data-pack-id="' + pid + '"]').removeClass('is-selected');
         updateBar();
     });
 
-    /* ---- modal "ver conteúdo" ---- */
+    /* ── modal ── */
     $(document).on('click', '.cc-btn-detail', function () {
         openPackModal($(this).data('pack-id'));
     });
@@ -142,7 +141,7 @@
             '      <span class="cc-modal-price">R$ ' + parseFloat(pack.price).toFixed(2).replace('.', ',') + '</span>' +
             '    </div>' +
             '    <div class="cc-modal-cards" id="cc-modal-cards">' +
-            '      <div class="cc-cards-loading">Carregando jogadores...</div>' +
+            '      <p class="cc-cards-loading">Carregando jogadores...</p>' +
             '    </div>' +
             '  </div>' +
             '</div>'
@@ -169,8 +168,8 @@
                 if (res.css && !$('#cc-fc-card-css').length) {
                     $('head').append('<style id="cc-fc-card-css">' + res.css + '</style>');
                 }
-                var $cont  = $('#cc-modal-cards');
-                var cards  = res.cards || {};
+                var $cont = $('#cc-modal-cards');
+                var cards = res.cards || {};
                 $cont.empty();
                 found.forEach(function (dme) {
                     var id   = String(dme.id);
@@ -203,10 +202,7 @@
                     var id   = $(this).data('dme-id');
                     var $sub = $('.cc-lineups-wrap[data-dme-id="' + id + '"]');
                     $sub.toggle();
-                    $(this).text($sub.is(':visible')
-                        ? 'Fechar elencos'
-                        : 'Ver elencos (' + $sub.children().length + ')'
-                    );
+                    $(this).text($sub.is(':visible') ? 'Fechar elencos' : 'Ver elencos (' + $sub.children().length + ')');
                 });
             });
         }).catch(function () {
@@ -214,7 +210,7 @@
         });
     }
 
-    /* ---- checkout ---- */
+    /* ── checkout ── */
     $(document).on('click', '#cc-bar-checkout', function () {
         var ids = Object.keys(selected).filter(function (k) { return selected[k]; });
         if (!ids.length) return;
@@ -237,7 +233,7 @@
         });
     });
 
-    /* ---- init ---- */
+    /* ── init ── */
     $(document).ready(function () {
         apiFetch(api + '/packs')
             .then(function (r) { return r.json(); })
