@@ -1,0 +1,17 @@
+{
+  "instance": {
+    "project": "",
+    "invariant": "",
+    "stack": [],
+    "domain": ""
+  },
+  "phases": {
+    "espaco":        { "status": "idle", "next": "esqueleto",     "translation": "", "updated_at": "" },
+    "esqueleto":     { "status": "idle", "next": "contratos",     "translation": "", "updated_at": "" },
+    "contratos":     { "status": "idle", "next": "configuracao",  "translation": "", "updated_at": "" },
+    "configuracao":  { "status": "idle", "next": "fluxo",         "translation": "", "updated_at": "" },
+    "fluxo":         { "status": "idle", "next": "implementacao", "translation": "", "updated_at": "" },
+    "implementacao": { "status": "idle", "next": "exposicao",     "translation": "", "updated_at": "" },
+    "exposicao":     { "status": "idle", "next": null,            "translation": "", "updated_at": "" }
+  }
+}
