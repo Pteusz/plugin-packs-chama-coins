@@ -17,9 +17,16 @@ class CC_Packs_Admin_Page {
 
     public function render( array $atts ): string {
         if ( ! $this->check_access() ) return '';
-        $mode = isset( $_GET['cc_mode'] ) && $_GET['cc_mode'] === 'orders' ? 'orders' : 'crud';
-        if ( $mode === 'orders' ) return $this->render_orders_mode();
-        return $this->render_crud_mode();
+        $mode       = isset( $_GET['cc_mode'] ) && $_GET['cc_mode'] === 'orders' ? 'orders' : 'crud';
+        $base_url   = get_permalink();
+        $crud_url   = remove_query_arg( 'cc_mode', $base_url );
+        $orders_url = add_query_arg( 'cc_mode', 'orders', $base_url );
+        $nav = '<nav class="cc-admin-nav">'
+            . '<a href="' . esc_url( $crud_url )   . '" class="' . ( $mode === 'crud'   ? 'is-active' : '' ) . '">📦 Packs</a>'
+            . '<a href="' . esc_url( $orders_url ) . '" class="' . ( $mode === 'orders' ? 'is-active' : '' ) . '">📋 Pedidos</a>'
+            . '</nav>';
+        if ( $mode === 'orders' ) return $nav . $this->render_orders_mode();
+        return $nav . $this->render_crud_mode();
     }
 
     private function check_access(): bool {
@@ -81,6 +88,16 @@ class CC_Packs_Admin_Page {
             CC_PACKS_VERSION,
             true
         );
+
+        wp_enqueue_style( 'cc-packs', CC_PACKS_URL . 'assets/style.css', [], CC_PACKS_VERSION );
+
+        if ( class_exists( 'FC_Card_Visual_Renderer' ) && ! wp_style_is( 'fc-card-renderer-inline', 'done' ) ) {
+            add_action( 'wp_head', function () {
+                echo FC_Card_Visual_Renderer::get_card_css();
+            }, 25 );
+            wp_register_style( 'fc-card-renderer-inline', false );
+            wp_enqueue_style( 'fc-card-renderer-inline' );
+        }
 
         wp_localize_script( 'cc-packs-admin', 'ccPacksAdmin', [
             'apiUrl'  => rest_url( CC_PACKS_API_NS ),

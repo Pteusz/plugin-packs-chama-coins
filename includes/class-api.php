@@ -111,7 +111,7 @@ class CC_Packs_API {
         $body  = $request->get_json_params();
         $items = $body['items'] ?? [];
 
-        if ( ! class_exists( 'FC_Card_Visual_Renderer' ) || ! class_exists( 'FC_Card_Normalizer' ) ) {
+        if ( ! class_exists( 'FC_Card_Visual_Renderer' ) ) {
             return new WP_REST_Response( [ 'error' => 'fc-card-renderer não está ativo' ], 500 );
         }
 
@@ -121,16 +121,27 @@ class CC_Packs_API {
             if ( ! $id ) continue;
 
             if ( ! empty( $item['is_player'] ) && ! empty( $item['player_details'] ) ) {
-                // Jogador: normaliza e renderiza card completo
-                $raw        = $item['player_details'];
-                $normalized = apply_filters( 'fc_card_normalize_data', $raw, [] );
-                if ( empty( $normalized['error'] ) ) {
-                    $cards[ $id ] = FC_Card_Visual_Renderer::render_card( $normalized, [ 'width' => 220 ] );
+                // Jogador: usa fc_card_get_player (mesmo filtro do CPS_Plugin)
+                $normalized = null;
+                if ( has_filter( 'fc_card_get_player' ) ) {
+                    $normalized = apply_filters( 'fc_card_get_player', null, $item['player_details'], [
+                        'default_mode'     => 'lance',
+                        'default_platform' => 'ps',
+                        'convert_prices'   => true,
+                    ] );
+                }
+                if ( $normalized && empty( $normalized['error'] ) ) {
+                    $cards[ $id ] = FC_Card_Visual_Renderer::render_card( $normalized, [
+                        'width'           => 220,
+                        'show_playstyles' => true,
+                        'show_extra_info' => true,
+                        'responsive'      => true,
+                    ] );
                 } else {
                     $cards[ $id ] = self::render_reward_fallback( $item );
                 }
             } else {
-                // Recompensa: card simples com reward_img
+                // Recompensa: card visual simples
                 $cards[ $id ] = self::render_reward_fallback( $item );
             }
         }

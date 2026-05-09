@@ -76,5 +76,14 @@ class CC_Packs_Store_Page {
             'nonce'   => wp_create_nonce( 'wp_rest' ),
             'sbcFeed' => home_url( CC_PACKS_SBC_FEED ),
         ] );
+
+        // Injeta CSS do fc-card-renderer uma vez no head
+        if ( class_exists( 'FC_Card_Visual_Renderer' ) && ! wp_style_is( 'fc-card-renderer-inline', 'done' ) ) {
+            add_action( 'wp_head', function () {
+                echo FC_Card_Visual_Renderer::get_card_css();
+            }, 25 );
+            wp_register_style( 'fc-card-renderer-inline', false );
+            wp_enqueue_style( 'fc-card-renderer-inline' );
+        }
     }
 }

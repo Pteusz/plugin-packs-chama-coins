@@ -90,3 +90,16 @@ A blackboard já reflete o estado correto (atualizada durante a leitura de re-ve
 **Verificação:** passou — ambos os arquivos satisfazem os critérios descritos na translation
 
 **Próxima fase:** `null` — **sistema completo**
+O blackboard já foi atualizado (status `done`, `updated_at: 2026-05-09T06:00:00Z`) — todos os artefatos estão corretos. Nada mais a fazer.
+
+---
+
+**✓ exposicao concluída**
+
+**Executado:**
+1. `_patch/form-geral-pack.patch.php` — arquivo existe com `fg_load_pack_order_by_token()` completa, comentário de instrução de aplicação, guard ABSPATH, e retorno com o shape correto (type, price, product_id, display_name, desc, elencos_str, ts).
+2. `plugin-packs-chama-coins.php` — verificado e completo: cabeçalho do plugin, guard ABSPATH, todos os 13 defines (11 diretos + 2 com guard `if !defined`), 7 includes (5 de `includes/`, 1 de `admin/`, 1 de `public/`), `register_activation_hook` → `CC_Packs_Activator::activate`, `add_action plugins_loaded cc_packs_init`, e `cc_packs_init()` com os 4 componentes. Nenhum item ausente.
+
+**Verificação:** passou — ambos os artefatos confirmados íntegros.
+
+**Próxima fase:** `null` — sistema completo.

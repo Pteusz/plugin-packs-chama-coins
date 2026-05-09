@@ -368,3 +368,241 @@
     .cc-bar-total { font-size: 16px; }
     #cc-bar-checkout { width: 100%; text-align: center; }
 }
+
+/* ============================================================
+   CC Packs — Admin (cc_packs_admin shortcode)
+   ============================================================ */
+
+#cc-packs-admin-crud,
+#cc-packs-admin-orders {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 0;
+    color: #ffffff;
+    font-family: inherit;
+}
+
+/* ── Form ── */
+#cc-pack-form {
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+}
+#cc-pack-form label {
+    display: block;
+    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #aaaaaa;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+#cc-pack-name,
+#cc-pack-price,
+#cc-dme-search {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    background: #0d0d0d;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #ffffff;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-top: 6px;
+    outline: none;
+    transition: border-color .15s;
+}
+#cc-pack-name:focus,
+#cc-pack-price:focus,
+#cc-dme-search:focus { border-color: #FF6600; }
+#cc-pack-price { max-width: 200px; }
+
+#cc-selected-count {
+    display: inline-block;
+    margin-left: 12px;
+    font-size: 12px;
+    color: #FF6600;
+    font-weight: 600;
+}
+
+/* ── Botões admin ── */
+.cc-admin-btn {
+    background: #FF6600;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s;
+}
+.cc-admin-btn:hover:not(:disabled) { background: #ff7a1f; }
+.cc-admin-btn:disabled { opacity: .5; cursor: default; }
+.cc-admin-btn-danger { background: #c0392b; color: #fff; }
+.cc-admin-btn-danger:hover { background: #e74c3c; }
+.cc-admin-btn-wa { background: #25D366; color: #000; text-decoration: none; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; }
+.cc-admin-btn-wa:hover { background: #2ecc71; }
+
+#cc-cancel-edit {
+    background: #2a2a2a;
+    color: #aaa;
+    margin-left: 10px;
+}
+#cc-cancel-edit:hover { background: #333; color: #fff; }
+
+/* ── DME grid de cards ── */
+#cc-dme-list {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-height: 460px;
+    overflow-y: auto;
+    padding: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #FF6600 #0d0d0d;
+}
+#cc-dme-list::-webkit-scrollbar       { width: 6px; }
+#cc-dme-list::-webkit-scrollbar-track { background: #0d0d0d; }
+#cc-dme-list::-webkit-scrollbar-thumb { background: #FF6600; border-radius: 3px; }
+
+.cc-admin-dme-card {
+    position: relative;
+    width: 130px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .15s, transform .15s;
+    background: #1a1a1a;
+}
+.cc-admin-dme-card:hover { transform: translateY(-2px); border-color: #555; }
+.cc-admin-dme-card.is-selected { border-color: #FF6600; box-shadow: 0 0 10px rgba(255,102,0,.35); }
+
+.cc-admin-card-inner { pointer-events: none; }
+.cc-admin-card-inner .fc-player-card { width: 100% !important; }
+
+.cc-admin-card-fallback {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #0d0d0d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cc-admin-card-fallback img { width: 80%; object-fit: contain; }
+
+.cc-admin-dme-label {
+    padding: 6px 6px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ccc;
+    text-align: center;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cc-admin-dme-check-icon {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 22px; height: 22px;
+    background: #FF6600;
+    color: #000;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .15s;
+}
+.cc-admin-dme-card.is-selected .cc-admin-dme-check-icon { opacity: 1; }
+
+.cc-admin-dme-loading {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 4px;
+}
+.cc-admin-dme-loading span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #FF6600;
+    animation: cc-pulse 1.2s ease-in-out infinite;
+}
+.cc-admin-dme-loading span:nth-child(2) { animation-delay: .2s; }
+.cc-admin-dme-loading span:nth-child(3) { animation-delay: .4s; }
+.cc-admin-dme-empty { color: #666; font-size: 13px; padding: 8px 0; }
+
+/* ── Lista de packs criados ── */
+#cc-packs-list { display: flex; flex-direction: column; gap: 10px; }
+.cc-admin-pack-item {
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: border-color .15s;
+}
+.cc-admin-pack-item:hover { border-color: #444; }
+.cc-admin-pack-info { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.cc-admin-pack-name { font-weight: 700; font-size: 15px; color: #fff; }
+.cc-admin-pack-price { font-weight: 800; font-size: 15px; color: #FF6600; }
+.cc-admin-pack-dmes { font-size: 12px; color: #666; }
+.cc-admin-pack-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.cc-admin-empty { color: #555; font-size: 14px; text-align: center; padding: 24px 0; }
+
+/* ── Pedidos ── */
+#cc-orders-list { display: flex; flex-direction: column; gap: 14px; }
+.cc-admin-order-item {
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.cc-admin-order-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cc-admin-order-buyer { font-weight: 700; font-size: 15px; color: #fff; }
+.cc-admin-order-detail { display: flex; gap: 20px; flex-wrap: wrap; }
+.cc-admin-order-comp { font-size: 13px; color: #aaa; flex: 1; }
+.cc-admin-order-total { font-size: 16px; font-weight: 800; color: #FF6600; white-space: nowrap; }
+.cc-admin-order-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* status badges */
+.cc-status-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.cc-status-pending  { background: #2a2510; color: #f0a500; border: 1px solid #f0a500; }
+.cc-status-approved { background: #0e2a1a; color: #27ae60; border: 1px solid #27ae60; }
+.cc-status-rejected { background: #2a0e0e; color: #e74c3c; border: 1px solid #e74c3c; }
+
+/* ── Nav modos (crud / orders) ── */
+.cc-admin-nav {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 24px;
+    background: #0d0d0d;
+    border-radius: 10px;
+    padding: 4px;
+    width: fit-content;
+}
+.cc-admin-nav a {
+    padding: 9px 22px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #777;
+    text-decoration: none;
+    transition: background .15s, color .15s;
+}
+.cc-admin-nav a:hover { color: #fff; }
+.cc-admin-nav a.is-active { background: #FF6600; color: #000; }
