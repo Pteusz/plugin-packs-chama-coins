@@ -1,0 +1,318 @@
+/* ==========================================================
+   Formulário Geral — CSS (escopo isolado ao container)
+   ========================================================== */
+
+/* Vars locais do componente (não poluem o :root do tema) */
+.fg-form-container {
+  --fg-text: #1a1a1a;
+  --fg-text-muted: #2a2a2a;
+  --fg-border: #d1d1d1;
+  --fg-bg: #ffffff;
+  --fg-note-bg: #F6F7FF;
+  --fg-radius: 12px;
+  --fg-gap: 12px;
+
+  /* Botão */
+  --fg-btn-bg: #000000;
+  --fg-btn-text: #ffffff;
+  --fg-btn-border: #0f0f0f;
+
+  /* Sheen (reflexo) */
+  --fg-sheen-speed: 2.8s;  /* velocidade do loop */
+  --fg-sheen-angle: 22deg; /* ângulo do brilho */
+  --fg-sheen-alpha: 0.36;  /* intensidade do brilho principal */
+  --fg-sheen-soft: 0.10;   /* “halo” suave nas bordas */
+
+  background: var(--fg-bg);
+  color: var(--fg-text);
+  padding: 20px;
+  border-radius: var(--fg-radius);
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  max-width: 680px;
+  margin: 24px auto;
+  font-family: Arial, sans-serif;
+  opacity: 0;
+  animation: fgFadeIn 0.8s forwards;
+}
+
+@media (max-width: 600px) {
+  .fg-form-container { margin: 24px 14px; }
+}
+.section {
+    padding: 20px 0;
+        padding-bottom: 80px;
+}
+/* Títulos e notas (cores escuras para leitura em fundo claro) */
+.fg-form-container h2 {
+  color: var(--fg-text);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.fg-form-container .fg-form-note {
+  font-size: 14px;
+  color: var(--fg-text);
+  background: var(--fg-note-bg);
+  border-left: 4px solid #111;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* Escopo: inputs/labels/textarea dentro do container */
+.fg-form-container label {
+  display: block;
+  margin: 10px 0 6px;
+  font-weight: 600;
+  color: var(--fg-text);
+}
+
+.fg-form-container input[type="text"],
+.fg-form-container input[type="email"],
+.fg-form-container input[type="password"],
+.fg-form-container textarea,
+.fg-form-container select {
+  width: 100%;
+  padding: 12px 12px;
+  border: 1px solid var(--fg-border);
+  border-radius: 10px;
+  transition: border-color .2s, box-shadow .2s;
+  background: #fff;
+  color: var(--fg-text);
+}
+
+.fg-form-container input:focus,
+.fg-form-container textarea:focus,
+.fg-form-container select:focus {
+  border-color: #000;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.08);
+  outline: none;
+}
+
+.fg-form-container textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* Grid responsivo do formulário (escopado) */
+.fg-form-container .row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--fg-gap);
+}
+.fg-form-container .row.two { grid-template-columns: 1fr; }
+
+@media (min-width: 720px) {
+  .fg-form-container .row.two { grid-template-columns: 1fr 1fr; }
+}
+
+/* Bloco de captura de foto (escopado) */
+.fg-form-container .capture-wrap {
+  background: #fafafa;
+  border: 1px dashed #cfcfcf;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 8px 0 12px;
+  color: var(--fg-text);
+}
+.fg-form-container .capture-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* Botões secundários (escopo ao form) */
+.fg-form-container .btn-sec {
+  background: #efefef;
+  color: #111;
+  border: 1px solid #ddd;
+  padding: 9px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.fg-form-container .btn-sec:hover { background: #e7e7e7; }
+
+/* Mídia de preview (escopado) */
+.fg-form-container video,
+.fg-form-container canvas,
+.fg-form-container img.preview {
+  width: 100%;
+  border-radius: 10px;
+  background: #000;
+}
+
+/* ===== Tutorial: garantir texto escuro legível ===== */
+.fg-form-container details { margin: 6px 0 12px; color: var(--fg-text-muted); }
+.fg-form-container details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--fg-text-muted); /* preto mais fraco */
+}
+.fg-form-container details p,
+.fg-form-container details li,
+.fg-form-container .video-tut,
+.fg-form-container .video-tut * {
+  color: var(--fg-text-muted);
+}
+/* ===== Botão principal (escopo ao form) — versão isolada ===== */
+.fg-form-container .fgx-btn{
+  /* Mantém a aparência global do tema, mas garante nossos requisitos */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative !important;
+  overflow: hidden !important;
+
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+
+  background: var(--fg-btn-bg);
+  color: var(--fg-btn-text);
+  border: 1px solid var(--fg-btn-border);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 6px 18px rgba(0,0,0,.18);
+
+  /* Evita “poda” pelo compositor (culpado do sumiço/“pisca”) */
+  isolation: isolate;
+  contain: paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+.fg-form-container .fgx-btn:hover { filter: brightness(1.04); }
+.fg-form-container .fgx-btn:active { transform: translateZ(0) translateY(1px); }
+
+/* Gloss suave superior (radial) */
+.fg-form-container .fgx-btn::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(140% 80% at 50% -20%,
+      rgba(255,255,255,0.08),
+      transparent 60%);
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+
+/* Sheen em loop — robusto com fallback */
+.fg-form-container .fgx-btn::after{
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: -20% -60%;
+  z-index: 2;
+
+  /* Fallback (sem blend): ainda visível */
+  mix-blend-mode: normal;
+  opacity: .85;
+
+  background:
+    linear-gradient(
+      to right,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,var(--fg-sheen-soft, .10)) 35%,
+      rgba(255,255,255,var(--fg-sheen-alpha, .36)) 50%,
+      rgba(255,255,255,var(--fg-sheen-soft, .10)) 65%,
+      rgba(255,255,255,0) 100%
+    );
+
+  transform:
+    rotate(var(--fg-sheen-angle, 22deg))
+    translate3d(-180%, 0, 0);
+
+  animation: fgSheenLoop var(--fg-sheen-speed, 2.8s) cubic-bezier(.4,0,.2,1) infinite both;
+  will-change: transform, opacity;
+}
+
+/* Quando houver suporte, o blend SCREEN deixa o brilho mais “vítreo” */
+@supports (mix-blend-mode: screen){
+  .fg-form-container .fgx-btn::after{
+    mix-blend-mode: screen;
+    opacity: .75;
+  }
+}
+
+/* Loop com respiro no fim (não cansa) */
+@keyframes fgSheenLoop{
+  0%   { transform: rotate(var(--fg-sheen-angle, 22deg)) translate3d(-180%,0,0); opacity: 0; }
+  10%  { opacity: .55; }
+  60%  { transform: rotate(var(--fg-sheen-angle, 22deg)) translate3d(180%,0,0);  opacity: .55; }
+  75%  { opacity: 0; }
+  100% { transform: rotate(var(--fg-sheen-angle, 22deg)) translate3d(180%,0,0);  opacity: 0; }
+}
+
+/* Acessibilidade: remover se quiser forçar o efeito sempre */
+@media (prefers-reduced-motion: reduce){
+  .fg-form-container .fgx-btn::after{ animation: none; opacity: 0; }
+}
+
+/* ===== Modal do vídeo (escopo ao form) — CENTRADO ===== */
+.fg-form-container .fg-modal[hidden] { display: none !important; }
+
+.fg-form-container .fg-modal {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex;               /* centraliza */
+  align-items: center;         /* vertical */
+  justify-content: center;     /* horizontal */
+  padding: 24px;               /* respiro em telas pequenas */
+  box-sizing: border-box;
+}
+
+.fg-form-container .fg-modal .overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.6);
+}
+h1 {
+    display: none;
+}
+.fg-form-container .fg-modal .box {
+  position: relative;
+  width: min(960px, 92vw);
+  aspect-ratio: 16 / 9;        /* mantém 16:9 */
+  max-height: 90vh;            /* nunca passa da viewport */
+  background: #000;
+  border-radius: var(--fg-radius);
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  overflow: hidden;
+}
+
+.fg-form-container .fg-modal .close {
+  position: absolute; top: 8px; right: 10px; z-index: 2;
+  font-size: 22px; line-height: 1;
+  background: #fff; border: 0; color: #111;
+  border-radius: 10px; padding: 6px 10px; cursor: pointer;
+}
+
+.fg-form-container .fg-modal .content { width: 100%; height: 100%; }
+.fg-form-container .fg-modal .video-wrap { position: relative; width: 100%; height: 100%; }
+.fg-form-container .fg-modal .video-wrap iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+}
+@media (max-width: 640px) {
+    .section {
+        padding-top: 0%;
+    }
+    .container{ padding: 1px;}
+      .breadcrumbs ol{ margin-left: 20px; margin-top: 20px;}
+
+}
+/* Pequenos utilitários */
+.fg-form-container .video-tut { margin: 10px 0 4px; }
+
+/* Reset local: evita que o tema injete setinhas/ícones em .btn via ::before/::after */
+.fg-form-container .btn::before,
+.fg-form-container .btn::after {
+  content: none !important;
+}
+
+
+/* Fade-in do card do formulário */
+@keyframes fgFadeIn { to { opacity: 1; } }

@@ -1,0 +1,18 @@
+---
+
+✓ **espaco** concluída
+
+**Executado:** Criados 11 arquivos nos caminhos exatos especificados — `plugin-packs-chama-coins.php` na raiz, 5 arquivos em `includes/`, 2 em `admin/`, 2 em `public/`, 1 em `assets/`. Arquivos PHP contêm apenas `<?php` de abertura; JS e CSS estão vazios.
+
+**Verificação:** passou — todos os 11 arquivos confirmados via listagem de arquivos.
+
+**Próxima fase:** `esqueleto`
+---
+
+✓ **esqueleto** concluída
+
+**Executado:** Preenchidos 8 arquivos PHP com cabeçalho de plugin, constantes, includes, hooks de ativação (`plugin-packs-chama-coins.php`) e 7 classes com todos os métodos assinados conforme especificado — sem corpo de implementação além de retornos neutros (`null`, `false`, `''`, `0`, `array()`). Arquivos `.js` e `.css` mantidos intocados.
+
+**Verificação:** Passou — todas as 7 classes declaradas, todos os métodos listados na translation presentes com assinatura correta, nenhuma lógica de negócio introduzida.
+
+**Próxima fase:** contratos
