@@ -1022,3 +1022,241 @@ body.cc-modal-open { overflow: hidden !important; }
 }
 .cc-admin-nav a:hover { color: var(--cc-text); }
 .cc-admin-nav a.is-active { background: var(--cc-grad-accent); color: #000; }
+
+/* ==========================================================
+   ADMIN — Pack carousel cards + kebab menu
+   ========================================================== */
+.cc-admin-packs-section { margin-bottom: 32px; }
+
+.cc-admin-section-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--cc-text);
+    margin: 0 0 14px;
+    padding: 0;
+    letter-spacing: -.2px;
+}
+
+.cc-admin-packs-carousel-wrap {
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cc-accent) var(--cc-bg);
+}
+.cc-admin-packs-carousel-wrap::-webkit-scrollbar       { height: 4px; }
+.cc-admin-packs-carousel-wrap::-webkit-scrollbar-track { background: var(--cc-bg); }
+.cc-admin-packs-carousel-wrap::-webkit-scrollbar-thumb { background: var(--cc-accent); border-radius: 2px; }
+
+.cc-admin-packs-carousel {
+    display: flex;
+    gap: 12px;
+    /* mínimo para ativar scroll horizontal quando há overflow */
+}
+
+/* Card individual do carousel */
+.cc-admin-pack-card {
+    background: var(--cc-card-bg);
+    border: 1px solid var(--cc-border-mid);
+    border-radius: var(--cc-r-md);
+    padding: 14px 14px 12px;
+    min-width: 180px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    transition: border-color var(--cc-t);
+    position: relative;
+}
+.cc-admin-pack-card:hover { border-color: var(--cc-border-hi); }
+
+.cc-admin-pack-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.cc-admin-pack-card-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cc-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+    display: block;
+}
+
+.cc-admin-pack-card-price {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--cc-accent);
+    display: block;
+}
+
+.cc-admin-pack-card-count {
+    font-size: 11px;
+    color: var(--cc-text-muted);
+    display: block;
+}
+
+/* Kebab menu */
+.cc-admin-pack-kebab-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.cc-admin-pack-kebab {
+    background: var(--cc-raised);
+    border: 1px solid var(--cc-border);
+    color: var(--cc-text-sub);
+    border-radius: var(--cc-r-xs);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--cc-t), color var(--cc-t);
+    padding: 0;
+}
+.cc-admin-pack-kebab:hover {
+    background: var(--cc-accent);
+    color: #000;
+    border-color: var(--cc-accent);
+}
+
+.cc-admin-pack-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--cc-raised);
+    border: 1px solid var(--cc-border-mid);
+    border-radius: var(--cc-r-sm);
+    overflow: hidden;
+    z-index: 200;
+    min-width: 130px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.55);
+    flex-direction: column;
+}
+.cc-admin-pack-menu.is-open { display: flex; }
+
+.cc-pack-menu-btn {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--cc-border);
+    color: var(--cc-text);
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background var(--cc-t);
+    display: block;
+    width: 100%;
+}
+.cc-pack-menu-btn:last-child { border-bottom: none; }
+.cc-pack-menu-btn:hover { background: var(--cc-card-bg); }
+.cc-pack-menu-danger     { color: #e74c3c !important; }
+.cc-pack-menu-danger:hover { background: rgba(231,76,60,.08) !important; }
+
+/* Admin form fields */
+.cc-admin-field {
+    margin-bottom: 18px;
+}
+
+.cc-admin-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+/* ==========================================================
+   CARD STORE — footer em coluna, nunca corta em mobile
+   ========================================================== */
+#cc-packs-store .cc-pack-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: auto;
+}
+
+#cc-packs-store .cc-pack-footer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+/* Botão "Adicionar" — full width */
+#cc-packs-store .cc-btn-add {
+    width: 100%;
+    text-align: center;
+    padding: 9px 12px;
+    font-size: 13px;
+}
+
+/* Stepper inline — full width quando ativo */
+#cc-packs-store .cc-pack-card.cc-has-qty .cc-qty-inline {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+/* "Ver conteúdo" — discreto, abaixo do footer */
+#cc-packs-store .cc-btn-view {
+    padding: 7px 10px;
+    font-size: 11px;
+}
+
+/* ==========================================================
+   MODAL — qty buttons fora do #cc-packs-store
+   ========================================================== */
+.cc-modal-qty .cc-qty-btn {
+    background: none;
+    border: none;
+    color: var(--cc-text-sub);
+    font-size: 18px;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 200ms ease, color 200ms ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+.cc-modal-qty .cc-qty-btn:hover {
+    background: var(--cc-accent);
+    color: #000;
+}
+
+.cc-modal-add-btn.cc-qty-plus {
+    /* Quando o botão "Adicionar ao carrinho" também tem cc-qty-plus,
+       garantir que não herde estilos do stepper */
+    background: var(--cc-grad-accent) !important;
+    color: #000 !important;
+    border: none !important;
+    border-radius: var(--cc-r-sm) !important;
+    padding: 11px 26px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+/* Override: #cc-packs-list é o carousel, não a lista vertical */
+#cc-packs-list,
+#cc-packs-list.cc-admin-packs-carousel {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+}
