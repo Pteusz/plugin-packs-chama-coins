@@ -37,30 +37,40 @@ class CC_Packs_Admin_Page {
         ob_start();
         ?>
         <div id="cc-packs-admin-crud">
-            <form id="cc-pack-form">
-                <p>
-                    <label>Nome do Pack<br>
-                        <input type="text" id="cc-pack-name" name="name" required style="width:100%;max-width:400px">
-                    </label>
-                </p>
-                <p>
-                    <label>Preço (R$)<br>
-                        <input type="number" id="cc-pack-price" name="price" step="0.01" min="0" required style="width:160px">
-                    </label>
-                </p>
-                <p>
-                    <label>Buscar DMEs<br>
-                        <input type="text" id="cc-dme-search" placeholder="Digite para buscar..." style="width:100%;max-width:400px">
-                    </label>
-                </p>
-                <div id="cc-dme-list"></div>
-                <p>
-                    <button type="submit" class="button button-primary">Salvar Pack</button>
-                    <button type="button" id="cc-cancel-edit" class="button" style="display:none;margin-left:8px">Cancelar</button>
-                </p>
-            </form>
-            <hr>
-            <div id="cc-packs-list"></div>
+
+            <!-- Lista de packs como cards (acima do formulário) -->
+            <div class="cc-admin-packs-section">
+                <h3 class="cc-admin-section-title">Packs criados</h3>
+                <div class="cc-admin-packs-carousel-wrap">
+                    <div id="cc-packs-list" class="cc-admin-packs-carousel"></div>
+                </div>
+            </div>
+
+            <!-- Formulário de criação / edição -->
+            <div id="cc-pack-form-wrap">
+                <h3 class="cc-admin-section-title" id="cc-form-title">Novo Pack</h3>
+                <div id="cc-pack-form">
+                    <div class="cc-admin-field">
+                        <label for="cc-pack-name">Nome do Pack</label>
+                        <input type="text" id="cc-pack-name" name="name" required>
+                    </div>
+                    <div class="cc-admin-field">
+                        <label for="cc-pack-price">Preço (R$)</label>
+                        <input type="number" id="cc-pack-price" name="price" step="0.01" min="0" required>
+                    </div>
+                    <div class="cc-admin-field">
+                        <label for="cc-dme-search">Buscar DMEs</label>
+                        <input type="text" id="cc-dme-search" placeholder="Filtrar por nome...">
+                        <span id="cc-selected-count"></span>
+                    </div>
+                    <div id="cc-dme-list"></div>
+                    <div class="cc-admin-form-actions">
+                        <button type="button" id="cc-save-pack" class="cc-admin-btn">Salvar Pack</button>
+                        <button type="button" id="cc-cancel-edit" class="cc-admin-btn cc-admin-btn-ghost" style="display:none">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
         <?php
         return ob_get_clean();
@@ -105,7 +115,6 @@ class CC_Packs_Admin_Page {
             'sbcFeed' => home_url( CC_PACKS_SBC_FEED ),
         ] );
 
-        // Sessões do ADM enriquecidas com dados do comprador
         $raw_sessions = CC_Packs_Session::get_by_adm( get_current_user_id() );
 
         $sessions = array_map( function( $s ) {
@@ -113,7 +122,6 @@ class CC_Packs_Admin_Page {
             $user  = get_userdata( $uid );
             $phone = get_user_meta( $uid, 'billing_phone', true );
             if ( ! $phone ) $phone = get_user_meta( $uid, 'phone', true );
-
             $s['buyer_name'] = $user ? $user->display_name : 'Usuário #' . $uid;
             $s['phone']      = sanitize_text_field( $phone ?: '' );
             return $s;

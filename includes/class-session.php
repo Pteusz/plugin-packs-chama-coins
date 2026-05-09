@@ -7,7 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* shape composition (JSON armazenado):
    { "<pack_id>": <qty_int>, ... }
    Exemplo: { "3": 2, "7": 1 }
-   calculate_total() itera esse shape, busca price de cada pack_id em wp_cc_packs e soma price * qty.
 */
 
 class CC_Packs_Session {
@@ -53,24 +52,45 @@ class CC_Packs_Session {
         ) !== false;
     }
 
+    /**
+     * Retorna todas as sessões que contêm ao menos um pack do admin informado.
+     * Usa filtragem em PHP para evitar problemas com JSON_CONTAINS no MySQL
+     * (a composition é um objeto JSON cujas chaves são os pack_ids — não valores).
+     */
     public static function get_by_adm( int $adm_id ): array {
         global $wpdb;
-        $st   = $wpdb->prefix . CC_PACKS_SESSIONS_TABLE;
-        $pt   = $wpdb->prefix . CC_PACKS_TABLE;
+        $pt = $wpdb->prefix . CC_PACKS_TABLE;
+        $st = $wpdb->prefix . CC_PACKS_SESSIONS_TABLE;
+
+        // IDs dos packs que pertencem a este admin
+        $pack_ids = $wpdb->get_col(
+            $wpdb->prepare( "SELECT id FROM {$pt} WHERE adm_id = %d", $adm_id )
+        );
+
+        if ( empty( $pack_ids ) ) return [];
+
+        $pack_ids_str = array_map( 'strval', $pack_ids );
+
+        // Todas as sessões (volume geralmente pequeno em contexto B2B)
         $rows = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT DISTINCT s.* FROM {$st} s
-                 JOIN {$pt} p ON JSON_CONTAINS(s.composition, CAST(p.id AS JSON), '$')
-                 WHERE p.adm_id = %d
-                 ORDER BY s.created_at DESC",
-                $adm_id
-            ),
+            "SELECT * FROM {$st} ORDER BY created_at DESC",
             ARRAY_A
         ) ?: [];
-        return array_map( function ( $r ) {
+
+        // Filtra: sessão contém ao menos um pack_id do admin
+        $filtered = array_filter( $rows, function ( $row ) use ( $pack_ids_str ) {
+            $comp = json_decode( $row['composition'], true );
+            if ( ! is_array( $comp ) ) return false;
+            foreach ( $pack_ids_str as $pid ) {
+                if ( array_key_exists( $pid, $comp ) ) return true;
+            }
+            return false;
+        } );
+
+        return array_values( array_map( function ( $r ) {
             $r['composition'] = json_decode( $r['composition'], true ) ?: [];
             return $r;
-        }, $rows );
+        }, $filtered ) );
     }
 
     public static function calculate_total( array $composition ): float {

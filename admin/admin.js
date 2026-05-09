@@ -9,6 +9,7 @@
     var editingId      = null;
     var selectedDmeIds = [];
     var feedCache      = null;
+    var allFeedItems   = [];
 
     function apiFetch(url, opts) {
         opts = opts || {};
@@ -23,14 +24,14 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 feedCache = Array.isArray(data) ? data : (data.data || data.items || []);
+                allFeedItems = feedCache;
                 return feedCache;
             });
     }
 
     /**
-     * Remove width/max-width/min-width inline de TODOS os elementos do HTML
-     * retornado pelo fc-card-renderer (que vem com style="width:220px" hard-coded).
-     * Substitui por width:100% para caber no container de 130px do admin.
+     * Remove width/max-width/min-width inline de todos os elementos
+     * do HTML retornado pelo fc-card-renderer (vem com style="width:220px").
      */
     function fitCardHtml(html) {
         if (!html) return '';
@@ -48,63 +49,86 @@
 
     /* ── CRUD MODE ── */
     function initCrud() {
-        var $list      = $('#cc-packs-list');
-        var $form      = $('#cc-pack-form');
-        var $search    = $('#cc-dme-search');
-        var $dmeList   = $('#cc-dme-list');
-        var $cancel    = $('#cc-cancel-edit');
+        var $list    = $('#cc-packs-list');
+        var $search  = $('#cc-dme-search');
+        var $dmeList = $('#cc-dme-list');
+        var $cancel  = $('#cc-cancel-edit');
+        var $save    = $('#cc-save-pack');
+        var $title   = $('#cc-form-title');
         var searchTimer = null;
 
         if (!$list.length) return;
 
         loadPacks();
 
+        // Carrega todos os DMEs ao iniciar (sem filtro)
+        renderDmes('');
+
+        // Filtra em tempo real conforme o usuário digita
         $search.on('input', function () {
             clearTimeout(searchTimer);
             var q = $(this).val().toLowerCase().trim();
-            if (!q) { $dmeList.empty(); return; }
-            searchTimer = setTimeout(function () { fetchAndRenderDmes(q); }, 280);
+            searchTimer = setTimeout(function () { renderDmes(q); }, 280);
         });
 
         $cancel.on('click', function () {
             editingId = null;
             selectedDmeIds = [];
-            $form[0].reset();
-            $dmeList.empty();
+            $('#cc-pack-name').val('');
+            $('#cc-pack-price').val('');
+            $search.val('');
             $cancel.hide();
+            $title.text('Novo Pack');
+            $save.text('Salvar Pack');
+            renderDmes('');
             updateSelectedBadge();
         });
 
-        $form.on('submit', function (e) {
-            e.preventDefault();
+        $save.on('click', function () {
+            var name  = $('#cc-pack-name').val().trim();
+            var price = parseFloat($('#cc-pack-price').val());
+            if (!name)                  { alert('Informe o nome do pack.');    return; }
+            if (isNaN(price) || price < 0) { alert('Informe um preço válido.'); return; }
             if (!selectedDmeIds.length) { alert('Selecione ao menos 1 DME.'); return; }
-            var data   = { name: $('#cc-pack-name').val(), price: parseFloat($('#cc-pack-price').val()), dme_ids: selectedDmeIds.slice() };
+
+            var data   = { name: name, price: price, dme_ids: selectedDmeIds.slice() };
             var url    = api + '/packs' + (editingId ? '/' + editingId : '');
             var method = editingId ? 'PUT' : 'POST';
-            var $btn   = $form.find('[type=submit]');
-            $btn.prop('disabled', true).text('Salvando...');
-            apiFetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-                .then(function (r) {
-                    if (!r.ok) { alert('Erro ao salvar pack.'); $btn.prop('disabled', false).text('Salvar Pack'); return; }
-                    editingId = null; selectedDmeIds = [];
-                    $form[0].reset(); $dmeList.empty(); $cancel.hide();
-                    updateSelectedBadge();
-                    $btn.prop('disabled', false).text('Salvar Pack');
-                    loadPacks();
-                });
+            $save.prop('disabled', true).text('Salvando...');
+
+            apiFetch(url, {
+                method:  method,
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(data),
+            }).then(function (r) {
+                if (!r.ok) { alert('Erro ao salvar pack.'); $save.prop('disabled', false).text('Salvar Pack'); return; }
+                editingId = null; selectedDmeIds = [];
+                $('#cc-pack-name').val(''); $('#cc-pack-price').val(''); $search.val('');
+                $cancel.hide();
+                $title.text('Novo Pack');
+                $save.prop('disabled', false).text('Salvar Pack');
+                renderDmes('');
+                updateSelectedBadge();
+                loadPacks();
+            });
         });
 
-        function fetchAndRenderDmes(q) {
-            $dmeList.html('<div class="cc-admin-dme-loading"><span></span><span></span><span></span></div>');
+        /* ── Renderiza DMEs (com ou sem filtro) ── */
+        function renderDmes(q) {
             getFeed().then(function (items) {
-                var filtered = items.filter(function (d) {
-                    return (d.name || '').toLowerCase().indexOf(q) !== -1;
-                }).slice(0, 20);
+                var filtered = q
+                    ? items.filter(function (d) {
+                        return (d.name || '').toLowerCase().indexOf(q) !== -1;
+                      })
+                    : items;
+                filtered = filtered.slice(0, 30);
 
                 if (!filtered.length) {
                     $dmeList.html('<p class="cc-admin-dme-empty">Nenhum DME encontrado.</p>');
                     return;
                 }
+
+                $dmeList.html('<div class="cc-admin-dme-loading"><span></span><span></span><span></span></div>');
 
                 return apiFetch(api + '/render-cards', {
                     method:  'POST',
@@ -120,9 +144,7 @@
                     $dmeList.empty();
                     filtered.forEach(function (dme) {
                         var id      = String(dme.id);
-                        var rawHtml = cards[id] || '';
-                        // força width 100% em qualquer inline style do card renderizado
-                        var html    = fitCardHtml(rawHtml);
+                        var html    = fitCardHtml(cards[id] || '');
                         var checked = selectedDmeIds.indexOf(id) !== -1;
                         var $wrap   = $(
                             '<div class="cc-admin-dme-card' + (checked ? ' is-selected' : '') + '" data-dme-id="' + id + '">' +
@@ -145,6 +167,7 @@
             });
         }
 
+        /* Toggle seleção */
         $dmeList.on('click', '.cc-admin-dme-card', function () {
             var id = String($(this).data('dme-id'));
             if ($(this).hasClass('is-selected')) {
@@ -158,50 +181,77 @@
         });
 
         function updateSelectedBadge() {
-            var $badge = $('#cc-selected-count');
-            if (!$badge.length) $search.after('<span id="cc-selected-count"></span>');
-            $('#cc-selected-count').text(selectedDmeIds.length ? selectedDmeIds.length + ' DME(s) selecionado(s)' : '');
+            $('#cc-selected-count').text(
+                selectedDmeIds.length ? selectedDmeIds.length + ' DME(s) selecionado(s)' : ''
+            );
         }
 
+        /* ── Lista de packs como cards com kebab ── */
         function loadPacks() {
             apiFetch(api + '/packs')
                 .then(function (r) { return r.json(); })
                 .then(function (res) {
                     var packs = res.data || [];
                     $list.empty();
-                    if (!packs.length) { $list.html('<p class="cc-admin-empty">Nenhum pack cadastrado.</p>'); return; }
+                    if (!packs.length) {
+                        $list.html('<p class="cc-admin-empty">Nenhum pack cadastrado ainda.</p>');
+                        return;
+                    }
                     packs.forEach(function (pack) {
                         var price = parseFloat(pack.price).toFixed(2).replace('.', ',');
-                        $list.append(
-                            '<div class="cc-admin-pack-item" data-id="' + pack.id + '">' +
-                            '<div class="cc-admin-pack-info">' +
-                            '<span class="cc-admin-pack-name">' + pack.name + '</span>' +
-                            '<span class="cc-admin-pack-price">R$ ' + price + '</span>' +
-                            '<span class="cc-admin-pack-dmes">' + (pack.dme_ids ? pack.dme_ids.length : 0) + ' DMEs</span>' +
-                            '</div>' +
-                            '<div class="cc-admin-pack-actions">' +
-                            '<button class="cc-admin-btn cc-edit-pack" data-pack=\'' + JSON.stringify(pack) + '\'>Editar</button>' +
-                            '<button class="cc-admin-btn cc-admin-btn-danger cc-delete-pack" data-id="' + pack.id + '">Excluir</button>' +
-                            '</div></div>'
+                        var $card = $(
+                            '<div class="cc-admin-pack-card" data-id="' + pack.id + '">' +
+                            '  <div class="cc-admin-pack-card-body">' +
+                            '    <span class="cc-admin-pack-card-name">' + pack.name + '</span>' +
+                            '    <span class="cc-admin-pack-card-price">R$ ' + price + '</span>' +
+                            '    <span class="cc-admin-pack-card-count">' + (pack.dme_ids ? pack.dme_ids.length : 0) + ' DMEs</span>' +
+                            '  </div>' +
+                            '  <div class="cc-admin-pack-kebab-wrap">' +
+                            '    <button class="cc-admin-pack-kebab" title="Opções">⋮</button>' +
+                            '    <div class="cc-admin-pack-menu">' +
+                            '      <button class="cc-pack-menu-btn cc-edit-pack" data-pack=\'' + JSON.stringify(pack) + '\'>✏️ Editar</button>' +
+                            '      <button class="cc-pack-menu-btn cc-pack-menu-danger cc-delete-pack" data-id="' + pack.id + '">🗑 Excluir</button>' +
+                            '    </div>' +
+                            '  </div>' +
+                            '</div>'
                         );
+                        $list.append($card);
                     });
                 });
         }
 
+        // Abre / fecha kebab ao clicar no ⋮
+        $list.on('click', '.cc-admin-pack-kebab', function (e) {
+            e.stopPropagation();
+            var $menu = $(this).siblings('.cc-admin-pack-menu');
+            $('.cc-admin-pack-menu').not($menu).removeClass('is-open');
+            $menu.toggleClass('is-open');
+        });
+
+        // Fecha kebab ao clicar fora
+        $(document).on('click', function () {
+            $('.cc-admin-pack-menu').removeClass('is-open');
+        });
+
         $list.on('click', '.cc-edit-pack', function (e) {
-            e.preventDefault();
+            e.stopPropagation();
             var pack = $(this).data('pack');
             editingId      = pack.id;
             selectedDmeIds = (pack.dme_ids || []).map(String);
             $('#cc-pack-name').val(pack.name);
             $('#cc-pack-price').val(pack.price);
             $cancel.show();
+            $title.text('Editar Pack');
+            $save.text('Atualizar Pack');
+            $('.cc-admin-pack-menu').removeClass('is-open');
+            renderDmes($search.val().toLowerCase().trim());
             updateSelectedBadge();
-            $('html,body').animate({ scrollTop: $form.offset().top - 40 }, 250);
+            $('html,body').animate({ scrollTop: $('#cc-pack-form-wrap').offset().top - 40 }, 250);
         });
 
         $list.on('click', '.cc-delete-pack', function (e) {
-            e.preventDefault();
+            e.stopPropagation();
+            $('.cc-admin-pack-menu').removeClass('is-open');
             if (!confirm('Excluir este pack?')) return;
             apiFetch(api + '/packs/' + $(this).data('id'), { method: 'DELETE' })
                 .then(function () { loadPacks(); });
@@ -222,14 +272,17 @@
                 (res.data || []).forEach(function (p) { packMap[p.id] = p; });
                 var sessions = window.ccPacksAdminSessions || [];
                 $list.empty();
-                if (!sessions.length) { $list.html('<p class="cc-admin-empty">Nenhum pedido encontrado.</p>'); return; }
+                if (!sessions.length) {
+                    $list.html('<p class="cc-admin-empty">Nenhum pedido encontrado.</p>');
+                    return;
+                }
                 renderOrders(sessions, packMap);
             });
 
         function compLabel(composition, packMap) {
             return Object.keys(composition).map(function (pid) {
                 var p = packMap[pid];
-                return (p ? p.name : 'Pack #' + pid) + ' x' + composition[pid];
+                return (p ? p.name : 'Pack #' + pid) + ' ×' + composition[pid];
             }).join(', ');
         }
 
@@ -264,15 +317,13 @@
         }
 
         $list.on('click', '.cc-approve-btn', function () {
-            var id = $(this).data('id');
-            apiFetch(api + '/session/' + id + '/status', {
+            apiFetch(api + '/session/' + $(this).data('id') + '/status', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'approved' }),
             }).then(function () { location.reload(); });
         });
         $list.on('click', '.cc-reject-btn', function () {
-            var id = $(this).data('id');
-            apiFetch(api + '/session/' + id + '/status', {
+            apiFetch(api + '/session/' + $(this).data('id') + '/status', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'rejected' }),
             }).then(function () { location.reload(); });
