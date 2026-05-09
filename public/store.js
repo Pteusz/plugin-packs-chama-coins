@@ -10,6 +10,8 @@
     var packsCache = [];
     var feedCache  = null;
 
+    console.log('[CC-STORE] init — api:', api, '| sbcFeed:', sbcFeed);
+
     /* ---- helpers ---- */
     function apiFetch(url, options) {
         options = options || {};
@@ -19,13 +21,26 @@
     }
 
     function getFeed() {
-        if (feedCache) return Promise.resolve(feedCache);
+        if (feedCache) {
+            console.log('[CC-STORE] getFeed: cache hit —', feedCache.length, 'items');
+            return Promise.resolve(feedCache);
+        }
+        console.log('[CC-STORE] getFeed: fetching', sbcFeed);
         return fetch(sbcFeed)
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                console.log('[CC-STORE] getFeed: HTTP', r.status, r.ok ? 'OK' : 'ERRO');
+                return r.json();
+            })
             .then(function (data) {
                 var items = Array.isArray(data) ? data : (data.data || data.items || []);
                 feedCache = items;
+                console.log('[CC-STORE] getFeed: total items =', items.length);
+                if (items.length) console.log('[CC-STORE] getFeed: item[0] keys =', Object.keys(items[0]), '| item[0] =', items[0]);
                 return items;
+            })
+            .catch(function (err) {
+                console.error('[CC-STORE] getFeed: FALHOU —', err);
+                throw err;
             });
     }
 
@@ -59,11 +74,13 @@
     function renderGrid(packs) {
         var $grid = $('#cc-store-grid');
         $grid.empty();
+        console.log('[CC-STORE] renderGrid:', packs.length, 'packs');
         if (!packs.length) {
             $grid.html('<p class="cc-empty">Nenhum pack disponível.</p>');
             return;
         }
         packs.forEach(function (pack) {
+            console.log('[CC-STORE] pack id:', pack.id, '| dme_ids:', pack.dme_ids);
             var price = parseFloat(pack.price).toFixed(2).replace('.', ',');
             var $card = $(
                 '<div class="cc-pack-card" data-pack-id="' + pack.id + '">' +
@@ -90,14 +107,29 @@
     }
 
     function fillThumbs(packId, dmeIds) {
+        console.log('[CC-STORE] fillThumbs — packId:', packId, '| dmeIds:', dmeIds);
         if (!dmeIds.length) {
+            console.log('[CC-STORE] fillThumbs: sem dme_ids, aplicando cc-thumbs-empty');
             $('.cc-pack-thumbs[data-pack-id="' + packId + '"]').html('<div class="cc-thumbs-empty"></div>');
             return;
         }
         getFeed().then(function (items) {
-            var ids    = dmeIds.map(String);
-            var found  = items.filter(function (d) { return ids.indexOf(String(d.id)) !== -1; });
-            var $wrap  = $('.cc-pack-thumbs[data-pack-id="' + packId + '"]');
+            var ids   = dmeIds.map(String);
+            var found = items.filter(function (d) { return ids.indexOf(String(d.id)) !== -1; });
+
+            console.log('[CC-STORE] fillThumbs packId:', packId,
+                '| buscando ids:', ids,
+                '| encontrados no feed:', found.length);
+
+            found.forEach(function (dme) {
+                var src = thumbFor(dme);
+                console.log('[CC-STORE]   dme id:', dme.id, '| thumbFor =', src || '(vazio)',
+                    '| is_player:', dme.is_player,
+                    '| player_preview:', dme.player_preview,
+                    '| reward_img:', dme.reward_img);
+            });
+
+            var $wrap = $('.cc-pack-thumbs[data-pack-id="' + packId + '"]');
             $wrap.empty();
             found.slice(0, 4).forEach(function (dme) {
                 var src = thumbFor(dme);
@@ -105,9 +137,17 @@
                     $wrap.append('<img class="cc-thumb-img" src="' + src + '" alt="' + (dme.name || '') + '">');
                 }
             });
+
+            console.log('[CC-STORE] fillThumbs packId:', packId,
+                '| $wrap children após append:', $wrap.children().length,
+                '| $wrap html:', $wrap.html());
+
             if (!$wrap.children().length) {
+                console.log('[CC-STORE] fillThumbs: nenhuma thumb com src, aplicando cc-thumbs-empty');
                 $wrap.html('<div class="cc-thumbs-empty"></div>');
             }
+        }).catch(function (err) {
+            console.error('[CC-STORE] fillThumbs erro:', err);
         });
     }
 
@@ -137,32 +177,34 @@
 
         getFeed().then(function (items) {
             var found = items.filter(function (d) { return dmeIds.indexOf(String(d.id)) !== -1; });
+            console.log('[CC-STORE] openPackModal — dmeIds:', dmeIds, '| found:', found.length);
             if (!found.length) {
                 $('#cc-modal-cards').html('<p>Nenhum DME encontrado.</p>');
                 return;
             }
-            // Busca cards renderizados pelo PHP
             return apiFetch(api + '/render-cards', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ items: found }),
             })
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                console.log('[CC-STORE] /render-cards modal: HTTP', r.status);
+                return r.json();
+            })
             .then(function (res) {
+                console.log('[CC-STORE] /render-cards modal resposta:', {
+                    temCss: !!res.css, cardKeys: Object.keys(res.cards || {}),
+                });
                 var $cont = $('#cc-modal-cards');
                 $cont.empty();
-
-                // Injeta CSS do renderer uma vez
                 if (res.css && !$('#cc-fc-card-css').length) {
                     $('head').append('<style id="cc-fc-card-css">' + res.css + '</style>');
                 }
-
                 var cards = res.cards || {};
                 found.forEach(function (dme) {
-                    var id  = String(dme.id);
+                    var id   = String(dme.id);
                     var html = cards[id] || '';
                     var challenges = dme.challenges || [];
-
                     var $item = $('<div class="cc-modal-dme-item">');
                     if (html) {
                         $item.append('<div class="cc-modal-card-wrap">' + html + '</div>');
@@ -187,7 +229,6 @@
                     }
                     $cont.append($item);
                 });
-
                 $cont.on('click', '.cc-btn-lineups', function () {
                     var id = $(this).data('dme-id');
                     var $sub = $('.cc-lineups-wrap[data-dme-id="' + id + '"]');
@@ -198,7 +239,8 @@
                     );
                 });
             });
-        }).catch(function () {
+        }).catch(function (err) {
+            console.error('[CC-STORE] openPackModal erro:', err);
             $('#cc-modal-cards').html('<p>Erro ao carregar cards.</p>');
         });
     }
@@ -253,6 +295,7 @@
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 packsCache = res.data || [];
+                console.log('[CC-STORE] packs carregados:', packsCache.length);
                 renderGrid(packsCache);
             });
     });

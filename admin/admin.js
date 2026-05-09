@@ -10,6 +10,8 @@
     var selectedDmeIds = [];
     var feedCache      = null;
 
+    console.log('[CC-ADMIN] init — api:', api, '| sbcFeed:', sbcFeed);
+
     function apiFetch(url, opts) {
         opts = opts || {};
         opts.headers = opts.headers || {};
@@ -18,12 +20,26 @@
     }
 
     function getFeed() {
-        if (feedCache) return Promise.resolve(feedCache);
+        if (feedCache) {
+            console.log('[CC-ADMIN] getFeed: cache hit —', feedCache.length, 'items');
+            return Promise.resolve(feedCache);
+        }
+        console.log('[CC-ADMIN] getFeed: fetching', sbcFeed);
         return fetch(sbcFeed)
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                console.log('[CC-ADMIN] getFeed: HTTP', r.status, r.ok ? 'OK' : 'ERRO');
+                return r.json();
+            })
             .then(function (data) {
-                feedCache = Array.isArray(data) ? data : (data.data || data.items || []);
-                return feedCache;
+                var items = Array.isArray(data) ? data : (data.data || data.items || []);
+                feedCache = items;
+                console.log('[CC-ADMIN] getFeed: total items =', items.length);
+                if (items.length) console.log('[CC-ADMIN] getFeed: item[0] keys =', Object.keys(items[0]), '| item[0] =', items[0]);
+                return items;
+            })
+            .catch(function (err) {
+                console.error('[CC-ADMIN] getFeed: FALHOU —', err);
+                throw err;
             });
     }
 
@@ -36,11 +52,11 @@
         var $cancel    = $('#cc-cancel-edit');
         var searchTimer = null;
 
+        console.log('[CC-ADMIN] initCrud — $list.length:', $list.length, '| $dmeList.length:', $dmeList.length);
         if (!$list.length) return;
 
         loadPacks();
 
-        // Busca DMEs com debounce
         $search.on('input', function () {
             clearTimeout(searchTimer);
             var q = $(this).val().toLowerCase().trim();
@@ -78,40 +94,69 @@
 
         /* Busca + renderiza DMEs como cards */
         function fetchAndRenderDmes(q) {
+            console.log('[CC-ADMIN] fetchAndRenderDmes: q =', q);
             $dmeList.html('<div class="cc-admin-dme-loading"><span></span><span></span><span></span></div>');
+
             getFeed().then(function (items) {
                 var filtered = items.filter(function (d) {
                     return (d.name || '').toLowerCase().indexOf(q) !== -1;
                 }).slice(0, 20);
+
+                console.log('[CC-ADMIN] fetchAndRenderDmes: filtered.length =', filtered.length);
+                if (filtered.length) console.log('[CC-ADMIN] fetchAndRenderDmes: filtered[0] =', filtered[0]);
 
                 if (!filtered.length) {
                     $dmeList.html('<p class="cc-admin-dme-empty">Nenhum DME encontrado.</p>');
                     return;
                 }
 
-                // Requisita cards renderizados ao PHP
-                return apiFetch(api + '/render-cards', {
+                var renderCardsUrl = api + '/render-cards';
+                console.log('[CC-ADMIN] POST', renderCardsUrl, '— enviando', filtered.length, 'items');
+
+                return apiFetch(renderCardsUrl, {
                     method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body:    JSON.stringify({ items: filtered }),
                 })
-                .then(function (r) { return r.json(); })
+                .then(function (r) {
+                    console.log('[CC-ADMIN] /render-cards: HTTP', r.status, r.ok ? 'OK' : 'ERRO');
+                    if (!r.ok) {
+                        return r.text().then(function (txt) {
+                            console.error('[CC-ADMIN] /render-cards corpo do erro:', txt);
+                            throw new Error('render-cards HTTP ' + r.status);
+                        });
+                    }
+                    return r.json();
+                })
                 .then(function (res) {
+                    console.log('[CC-ADMIN] /render-cards resposta:', {
+                        temCss:   !!res.css,
+                        cssLen:   res.css ? res.css.length : 0,
+                        cardKeys: Object.keys(res.cards || {}),
+                        cards:    res.cards,
+                    });
+
                     if (res.css && !$('#cc-fc-card-css').length) {
                         $('head').append('<style id="cc-fc-card-css">' + res.css + '</style>');
+                        console.log('[CC-ADMIN] CSS do renderer injetado no head');
                     }
+
                     var cards = res.cards || {};
                     $dmeList.empty();
+
                     filtered.forEach(function (dme) {
                         var id      = String(dme.id);
                         var html    = cards[id] || '';
                         var checked = selectedDmeIds.indexOf(id) !== -1;
-                        var $wrap   = $(
+
+                        console.log('[CC-ADMIN] dme id:', id, '| html vazio?', !html, '| reward_img:', dme.reward_img || '(nenhum)');
+
+                        var $wrap = $(
                             '<div class="cc-admin-dme-card' + (checked ? ' is-selected' : '') + '" data-dme-id="' + id + '">' +
                             (html
                                 ? '<div class="cc-admin-card-inner">' + html + '</div>'
                                 : '<div class="cc-admin-card-fallback">' +
-                                  (dme.reward_img ? '<img src="' + dme.reward_img + '">' : '') +
+                                  (dme.reward_img ? '<img src="' + dme.reward_img + '">' : '<span style="color:#666;font-size:10px">sem img</span>') +
                                   '</div>'
                             ) +
                             '<div class="cc-admin-dme-label">' + (dme.name || id) + '</div>' +
@@ -120,14 +165,17 @@
                         );
                         $dmeList.append($wrap);
                     });
+
+                    console.log('[CC-ADMIN] $dmeList children após append:', $dmeList.children().length);
+                    console.log('[CC-ADMIN] $dmeList visível?', $dmeList.is(':visible'), '| display:', $dmeList.css('display'), '| height:', $dmeList.height());
                     updateSelectedBadge();
                 });
-            }).catch(function () {
+            }).catch(function (err) {
+                console.error('[CC-ADMIN] fetchAndRenderDmes FALHOU:', err);
                 $dmeList.html('<p class="cc-admin-dme-empty">Erro ao carregar DMEs.</p>');
             });
         }
 
-        // Toggle seleção ao clicar no card
         $dmeList.on('click', '.cc-admin-dme-card', function () {
             var id = String($(this).data('dme-id'));
             if ($(this).hasClass('is-selected')) {
@@ -152,6 +200,7 @@
                 .then(function (r) { return r.json(); })
                 .then(function (res) {
                     var packs = res.data || [];
+                    console.log('[CC-ADMIN] loadPacks:', packs.length, 'packs');
                     $list.empty();
                     if (!packs.length) { $list.html('<p class="cc-admin-empty">Nenhum pack cadastrado.</p>'); return; }
                     packs.forEach(function (pack) {
@@ -226,7 +275,6 @@
                 var waLink = phone
                     ? '<a class="cc-admin-btn cc-admin-btn-wa" href="https://wa.me/55' + phone + '?text=' + waText + '" target="_blank">WhatsApp</a>'
                     : '';
-
                 var statusClass = 'cc-status-' + (s.status || 'pending');
                 var $row = $(
                     '<div class="cc-admin-order-item">' +
