@@ -66,3 +66,27 @@
 **Verificação:** passou — todos os 9 pontos da verificação atendidos. Nota: o orders mode do `admin.js` consome `window.ccPacksAdminSessions` (array que o PHP precisará passar via `wp_localize_script` adicional), pois não existe endpoint REST para listagem de sessões por ADM — os botões Aprovar/Reprovar operam via `POST /session/{id}/status` que está implementado.
 
 **Próxima fase:** `exposicao`
+---
+
+✓ **exposicao** concluída
+
+**Executado:**
+- Criado `_patch/form-geral-pack.patch.php` com a função `fg_load_pack_order_by_token()` completa e o bloco de instruções de aplicação no cabeçalho.
+- Verificado `plugin-packs-chama-coins.php`: todos os 13 itens presentes na ordem exigida — cabeçalho, guard ABSPATH, 11 constantes (2 com `if !defined`), 7 includes, `register_activation_hook`, `add_action plugins_loaded`, e `cc_packs_init()` com os 4 componentes. Nenhuma modificação necessária.
+
+**Verificação:** passou — patch existe com função completa; entry point satisfaz todos os requisitos da translation.
+
+**Próxima fase:** `null` — sistema completo.
+A blackboard já reflete o estado correto (atualizada durante a leitura de re-verificação). Tudo concluído.
+
+---
+
+✓ **exposicao** concluída
+
+**Executado:**
+1. `_patch/form-geral-pack.patch.php` — arquivo existente com a função `fg_load_pack_order_by_token()` completa e comentário de instrução de aplicação
+2. `plugin-packs-chama-coins.php` — verificados todos os 13 itens (cabeçalho, guard, 11 constantes com guards corretos nas duas últimas, 7 includes, activation hook, `plugins_loaded`, `cc_packs_init()` com 4 componentes)
+
+**Verificação:** passou — ambos os arquivos satisfazem os critérios descritos na translation
+
+**Próxima fase:** `null` — **sistema completo**
