@@ -90,9 +90,6 @@
                 '        <span></span><span></span><span></span>' +
                 '      </div>' +
                 '    </div>' +
-                '    <div class="cc-pack-cover-overlay">' +
-                '      <button class="cc-btn-view" data-pack-id="' + id + '">Ver conteúdo</button>' +
-                '    </div>' +
                 '  </div>' +
 
                 '  <div class="cc-pack-meta">' +
@@ -100,10 +97,13 @@
                 '    <div class="cc-pack-bottom">' +
                 '      <span class="cc-pack-price">R$ ' + price + '</span>' +
                 '      <div class="cc-qty-controls">' +
-                '        <button class="cc-qty-btn cc-qty-minus" data-pack-id="' + id + '" title="Remover">−</button>' +
+                '        <button class="cc-qty-btn cc-qty-minus" data-pack-id="' + id + '">−</button>' +
                 '        <span class="cc-qty-display" data-pack-id="' + id + '">0</span>' +
-                '        <button class="cc-qty-btn cc-qty-plus" data-pack-id="' + id + '" title="Adicionar">+</button>' +
+                '        <button class="cc-qty-btn cc-qty-plus" data-pack-id="' + id + '">+</button>' +
                 '      </div>' +
+                '    </div>' +
+                '    <div class="cc-pack-actions">' +
+                '      <button class="cc-btn-view" data-pack-id="' + id + '">Ver conteúdo</button>' +
                 '    </div>' +
                 '  </div>' +
 
