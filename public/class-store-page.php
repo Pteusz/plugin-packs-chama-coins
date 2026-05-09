@@ -63,6 +63,7 @@ class CC_Packs_Store_Page {
         global $post;
         if ( ! is_a( $post, 'WP_Post' ) ) return;
         if ( ! has_shortcode( $post->post_content, 'cc_packs_store' ) ) return;
+        wp_enqueue_style( 'cc-packs', CC_PACKS_URL . 'assets/style.css', [], CC_PACKS_VERSION );
         wp_enqueue_script(
             'cc-packs-store',
             CC_PACKS_URL . 'public/store.js',
