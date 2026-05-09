@@ -1,0 +1,11 @@
+{
+  "projeto": "plugin-packs-chama-coins",
+  "dominio": "WordPress plugin — curadoria e comercialização de packs de DMEs",
+  "passos_ate_colapso": 2,
+  "tensoes_por_resposta": 1.0,
+  "limiar": {
+    "profundidade_condicional": 3,
+    "recursoes_da_invariante": 1,
+    "delta_x_para_y": "Invariante iniciou como 'produto WC é o núcleo' — colapsou para estrutura mais rica onde o pack é entidade própria em tabela, o produto WC é único e o pedido é composição colapsada via token. A tensão A/Q do Ciclo 1 foi confirmada como A, mas o Ciclo 2 foi substituído por um colapso completo do modelo pelo usuário em uma única resposta — o modelo emergiu inteiro sem iteração adicional."
+  }
+}
