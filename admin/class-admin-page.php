@@ -91,15 +91,21 @@ class CC_Packs_Admin_Page {
         if ( ! is_a( $post, 'WP_Post' ) ) return;
         if ( ! has_shortcode( $post->post_content, 'cc_packs_admin' ) ) return;
 
+        $js_path  = CC_PACKS_DIR . 'admin/admin.js';
+        $css_path = CC_PACKS_DIR . 'assets/style.css';
         wp_enqueue_script(
             'cc-packs-admin',
             CC_PACKS_URL . 'admin/admin.js',
             [ 'jquery' ],
-            CC_PACKS_VERSION,
+            file_exists( $js_path )  ? filemtime( $js_path )  : CC_PACKS_VERSION,
             true
         );
-
-        wp_enqueue_style( 'cc-packs', CC_PACKS_URL . 'assets/style.css', [], CC_PACKS_VERSION );
+        wp_enqueue_style(
+            'cc-packs',
+            CC_PACKS_URL . 'assets/style.css',
+            [],
+            file_exists( $css_path ) ? filemtime( $css_path ) : CC_PACKS_VERSION
+        );
 
         if ( class_exists( 'FC_Card_Visual_Renderer' ) && ! wp_style_is( 'fc-card-renderer-inline', 'done' ) ) {
             add_action( 'wp_head', function () {
@@ -115,7 +121,7 @@ class CC_Packs_Admin_Page {
             'sbcFeed' => home_url( CC_PACKS_SBC_FEED ),
         ] );
 
-        $raw_sessions = CC_Packs_Session::get_by_adm( get_current_user_id() );
+        $raw_sessions = CC_Packs_Session::get_all_sessions();
 
         $sessions = array_map( function( $s ) {
             $uid   = intval( $s['user_id'] );

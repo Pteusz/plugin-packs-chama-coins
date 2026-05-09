@@ -57,6 +57,19 @@ class CC_Packs_Session {
      * Usa filtragem em PHP para evitar problemas com JSON_CONTAINS no MySQL
      * (a composition é um objeto JSON cujas chaves são os pack_ids — não valores).
      */
+    /**
+     * Retorna TODAS as sessões — usado na view admin (manage_options já garante o acesso).
+     */
+    public static function get_all_sessions(): array {
+        global $wpdb;
+        $st   = $wpdb->prefix . CC_PACKS_SESSIONS_TABLE;
+        $rows = $wpdb->get_results( "SELECT * FROM {$st} ORDER BY created_at DESC", ARRAY_A ) ?: [];
+        return array_values( array_map( function ( $r ) {
+            $r['composition'] = json_decode( $r['composition'], true ) ?: [];
+            return $r;
+        }, $rows ) );
+    }
+
     public static function get_by_adm( int $adm_id ): array {
         global $wpdb;
         $pt = $wpdb->prefix . CC_PACKS_TABLE;

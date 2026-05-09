@@ -59,7 +59,8 @@
             var q  = qty[id] || 0;
             var $card = $('.cc-pack-card[data-pack-id="' + id + '"]');
             $card.toggleClass('cc-has-qty', q > 0);
-            $('.cc-qty-display[data-pack-id="' + id + '"]').text(q);
+            // Atualiza todos os exibidores de quantidade (card + modal)
+            $('.cc-qty-display[data-pack-id="' + id + '"]').text(q > 0 ? q : 1);
         });
     }
 
@@ -94,17 +95,16 @@
 
                 '  <div class="cc-pack-meta">' +
                 '    <h3 class="cc-pack-name">' + pack.name + '</h3>' +
-                '    <div class="cc-pack-bottom">' +
+                '    <div class="cc-pack-footer">' +
                 '      <span class="cc-pack-price">R$ ' + price + '</span>' +
-                '      <div class="cc-qty-controls">' +
+                '      <button class="cc-btn-add cc-qty-plus" data-pack-id="' + id + '">Adicionar</button>' +
+                '      <div class="cc-qty-inline">' +
                 '        <button class="cc-qty-btn cc-qty-minus" data-pack-id="' + id + '">−</button>' +
-                '        <span class="cc-qty-display" data-pack-id="' + id + '">0</span>' +
+                '        <span class="cc-qty-num cc-qty-display" data-pack-id="' + id + '">1</span>' +
                 '        <button class="cc-qty-btn cc-qty-plus" data-pack-id="' + id + '">+</button>' +
                 '      </div>' +
                 '    </div>' +
-                '    <div class="cc-pack-actions">' +
-                '      <button class="cc-btn-view" data-pack-id="' + id + '">Ver conteúdo</button>' +
-                '    </div>' +
+                '    <button class="cc-btn-view" data-pack-id="' + id + '">Ver conteúdo</button>' +
                 '  </div>' +
 
                 '</div>'
