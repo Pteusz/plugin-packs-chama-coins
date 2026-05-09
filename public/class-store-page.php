@@ -19,50 +19,52 @@ class CC_Packs_Store_Page {
         ob_start();
         ?>
         <div id="cc-packs-store">
-            <div id="cc-store-grid" class="cc-packs-store"></div>
-            <div id="cc-store-bar" class="cc-store-bar" style="display:none">
+
+            <header class="cc-store-hero">
+                <div class="cc-store-hero-inner">
+                    <span class="cc-store-hero-tag">Promoções DME</span>
+                    <h2 class="cc-store-hero-title">Complete seus SBCs com os melhores jogadores</h2>
+                    <p class="cc-store-hero-desc">
+                        Cada pack contém jogadores selecionados para Squad Building Challenges específicos.
+                        Adicione ao carrinho, finalize o pedido e receba os jogadores direto na sua conta FC —
+                        sem complicação.
+                    </p>
+                    <div class="cc-store-hero-steps">
+                        <div class="cc-store-step">
+                            <span class="cc-store-step-num">1</span>
+                            <span>Escolha o pack</span>
+                        </div>
+                        <div class="cc-store-step-sep">→</div>
+                        <div class="cc-store-step">
+                            <span class="cc-store-step-num">2</span>
+                            <span>Finalize o pedido</span>
+                        </div>
+                        <div class="cc-store-step-sep">→</div>
+                        <div class="cc-store-step">
+                            <span class="cc-store-step-num">3</span>
+                            <span>Receba na conta</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="cc-store-grid"></div>
+
+            <div id="cc-store-bar" style="display:none">
                 <div id="cc-bar-summary"></div>
-                <button id="cc-bar-checkout" class="button">Concluir Compra</button>
+                <button id="cc-bar-checkout">Finalizar Pedido</button>
             </div>
+
         </div>
         <?php
         return ob_get_clean();
-    }
-
-    private function render_pack_card( array $pack ): string {
-        $price = number_format( floatval( $pack['price'] ), 2, ',', '.' );
-        $id    = intval( $pack['id'] );
-        ob_start();
-        ?>
-        <div class="cc-pack-card" data-pack-id="<?php echo esc_attr( $id ); ?>" data-price="<?php echo esc_attr( $pack['price'] ); ?>">
-            <h3><?php echo esc_html( $pack['name'] ); ?></h3>
-            <p class="cc-pack-price">R$ <?php echo esc_html( $price ); ?></p>
-            <div class="cc-dme-thumbs" data-dme-ids="<?php echo esc_attr( wp_json_encode( $pack['dme_ids'] ?? [] ) ); ?>"></div>
-            <button class="cc-view-pack button" data-pack-id="<?php echo esc_attr( $id ); ?>">Ver Pack</button>
-            <div class="cc-qty-controls">
-                <button class="cc-qty-minus" data-pack-id="<?php echo esc_attr( $id ); ?>">-</button>
-                <span class="cc-qty-display" data-pack-id="<?php echo esc_attr( $id ); ?>">0</span>
-                <button class="cc-qty-plus" data-pack-id="<?php echo esc_attr( $id ); ?>">+</button>
-            </div>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
-
-    private function render_dme_preview( array $dme ): string {
-        $name = esc_html( $dme['name'] ?? $dme['title'] ?? '' );
-        $img  = ! empty( $dme['reward_img'] ) ? '<img src="' . esc_url( $dme['reward_img'] ) . '" style="max-width:80px;display:block;margin-bottom:4px">' : '';
-        $id   = esc_attr( $dme['id'] ?? '' );
-        return '<div class="cc-dme-preview-item">' . $img . '<span>' . $name . '</span> '
-            . '<button class="cc-view-lineups button button-small" data-dme-id="' . $id . '">Ver Elencos</button>'
-            . '<div class="cc-lineups-list" data-dme-id="' . $id . '" style="display:none"></div>'
-            . '</div>';
     }
 
     public function enqueue_assets(): void {
         global $post;
         if ( ! is_a( $post, 'WP_Post' ) ) return;
         if ( ! has_shortcode( $post->post_content, 'cc_packs_store' ) ) return;
+
         wp_enqueue_style( 'cc-packs', CC_PACKS_URL . 'assets/style.css', [], CC_PACKS_VERSION );
         wp_enqueue_script(
             'cc-packs-store',
@@ -77,7 +79,6 @@ class CC_Packs_Store_Page {
             'sbcFeed' => home_url( CC_PACKS_SBC_FEED ),
         ] );
 
-        // Injeta CSS do fc-card-renderer uma vez no head
         if ( class_exists( 'FC_Card_Visual_Renderer' ) && ! wp_style_is( 'fc-card-renderer-inline', 'done' ) ) {
             add_action( 'wp_head', function () {
                 echo FC_Card_Visual_Renderer::get_card_css();
