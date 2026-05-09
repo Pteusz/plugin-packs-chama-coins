@@ -16,3 +16,53 @@
 **Verificação:** Passou — todas as 7 classes declaradas, todos os métodos listados na translation presentes com assinatura correta, nenhuma lógica de negócio introduzida.
 
 **Próxima fase:** contratos
+---
+
+✓ **contratos** concluída
+
+**Executado:**
+- `plugin-packs-chama-coins.php`: 7 constantes de domínio adicionadas (`CC_PACKS_TABLE`, `CC_PACKS_SESSIONS_TABLE`, `CC_PACKS_API_NS`, `CC_PACKS_SBC_FEED`, `CC_PACKS_STATUS_PENDING`, `CC_PACKS_STATUS_APPROVED`, `CC_PACKS_STATUS_REJECTED`)
+- `includes/class-activator.php`: dois blocos de schema SQL adicionados como comentário dentro de `create_tables()`
+- `includes/class-session.php`: comentário de shape de composição adicionado antes da classe
+- `includes/class-api.php`: comentário de endpoints REST adicionado, método `get_session()` declarado
+
+**Verificação:** passou — todas as 7 constantes presentes, ambos os schemas em `class-activator.php`, shape de composição em `class-session.php`, comentário de endpoints e `get_session()` em `class-api.php`
+
+**Próxima fase:** configuracao
+---
+
+✓ **configuracao** concluída
+
+**Executado:** Adicionadas as constantes `CC_PACKS_FORM_BASE_URL` e `CC_PACKS_NONCE_ACTION` em `plugin-packs-chama-coins.php`, logo após `CC_PACKS_STATUS_REJECTED`, cada uma com guard `if ( ! defined(...) )` para permitir sobrescrita via `wp-config.php`.
+
+**Verificação:** Passou — ambas as constantes estão presentes com os valores exatos especificados e na posição correta (após bloco de status, antes dos `require_once`).
+
+**Próxima fase:** `fluxo`
+---
+
+✓ **fluxo** concluída
+
+**Executado:** Wiring completo de todos os componentes — `CC_Packs_WC_Bridge::init()` com 3 hooks WC; `CC_Packs_API::init()` + `register_routes()` com 7 rotas REST; 4 novas assinaturas em `class-api.php` (`create_pack`, `update_pack`, `delete_pack`, `update_session_status`); `__construct()` de `CC_Packs_Admin_Page` e `CC_Packs_Store_Page` registrando shortcode e enqueue; `render()` de admin com verificação de acesso e despacho por modo; `cc_packs_init()` já estava correto.
+
+**Verificação:** passou — todos os 6 critérios confirmados.
+
+**Próxima fase:** `implementacao`
+---
+
+✓ **implementacao** concluída
+
+**Executado:**
+- `includes/class-activator.php` — `activate()` chama `create_tables()` + `register_wc_product()`; ambas as tabelas criadas via `dbDelta`; produto WC criado e persisted via `update_option`
+- `includes/class-crud.php` — 6 métodos: `create`, `update`, `delete`, `get`, `get_all`, `get_by_adm` com queries `$wpdb` corretas e sanitização adequada
+- `includes/class-session.php` — `generate_token` via `bin2hex(random_bytes(16))`, `calculate_total` soma `price × qty`, `create` persiste com token, `get_by_token`, `update_status` com validação de enum, `get_by_adm` via JOIN + `JSON_CONTAINS`
+- `includes/class-wc-bridge.php` — `get_product_id`, `get_or_create_product`, `inject_dynamic_price` via `cc_pack_price`, `set_cart_item_name`, `set_order_item_meta` com meta Descrição/Token
+- `includes/class-api.php` — `public_permission` retorna `true`, `admin_permission` via `manage_options`; 7 handlers implementados com validação e `WP_REST_Response`
+- `admin/class-admin-page.php` — `enqueue_assets` verifica `has_shortcode`; `render_crud_mode` retorna form com campo dme-search e `#cc-dme-list`; `render_orders_mode` retorna `#cc-orders-list`
+- `public/class-store-page.php` — `render` retorna grid + barra checkout; `render_pack_card` com `data-pack-id`, `data-price`, thumbs, qty controls; `render_dme_preview` com `reward_img` e botão elencos
+- `admin/admin.js` — CRUD completo (fetch/render/edit/delete + dme-search com checkboxes); orders mode com Aprovar/Reprovar via `POST /session/{id}/status`; nonce em todos os fetches
+- `public/store.js` — fetch/render cards; thumbs via sbcFeed; modal "Ver Pack" com DMEs e elencos; qty +/-; barra dinâmica; checkout via `POST /session` com redirect
+- `assets/style.css` — 7 blocos: grid `.cc-packs-store`, `.cc-pack-card`, `.cc-store-bar`, `.cc-qty-controls`, `#cc-dme-list`, `.cc-modal`, `.cc-modal-box`
+
+**Verificação:** passou — todos os 9 pontos da verificação atendidos. Nota: o orders mode do `admin.js` consome `window.ccPacksAdminSessions` (array que o PHP precisará passar via `wp_localize_script` adicional), pois não existe endpoint REST para listagem de sessões por ADM — os botões Aprovar/Reprovar operam via `POST /session/{id}/status` que está implementado.
+
+**Próxima fase:** `exposicao`

@@ -15,6 +15,20 @@ define( 'CC_PACKS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CC_PACKS_URL', plugin_dir_url( __FILE__ ) );
 define( 'CC_PACKS_PRODUCT_OPTION', 'cc_packs_product_id' );
 
+define( 'CC_PACKS_TABLE',          'cc_packs' );
+define( 'CC_PACKS_SESSIONS_TABLE', 'cc_pack_sessions' );
+define( 'CC_PACKS_API_NS',         'cc/v1' );
+define( 'CC_PACKS_SBC_FEED',       '/wp-json/fhub/v1/sbc/feed' );
+define( 'CC_PACKS_STATUS_PENDING',  'pending' );
+define( 'CC_PACKS_STATUS_APPROVED', 'approved' );
+define( 'CC_PACKS_STATUS_REJECTED', 'rejected' );
+
+if ( ! defined('CC_PACKS_FORM_BASE_URL') )
+    define('CC_PACKS_FORM_BASE_URL', 'https://chamacoins.com.br/dme-form/');
+
+if ( ! defined('CC_PACKS_NONCE_ACTION') )
+    define('CC_PACKS_NONCE_ACTION', 'cc_packs_nonce');
+
 require_once CC_PACKS_DIR . 'includes/class-activator.php';
 require_once CC_PACKS_DIR . 'includes/class-crud.php';
 require_once CC_PACKS_DIR . 'includes/class-session.php';
