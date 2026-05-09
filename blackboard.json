@@ -1,9 +1,10 @@
 {
   "instance": {
-    "project": "",
-    "invariant": "",
-    "stack": [],
-    "domain": ""
+    "project": "plugin-packs-chama-coins",
+    "invariant": "Um pack é um grupo nomeado e precificado de DMEs persistido em tabela própria. O pedido é a composição de packs com quantidade, colapsada via token de sessão em 1 compra do produto WooCommerce 'Packs' — cujo valor é a soma das partes.",
+    "stack": ["PHP", "WordPress", "WooCommerce", "MySQL", "JavaScript"],
+    "domain": "WordPress plugin — curadoria e comercialização de packs de DMEs",
+    "decay_hours": 24
   },
   "phases": {
     "espaco":        { "status": "idle", "next": "esqueleto",     "translation": "", "updated_at": "" },
