@@ -1,9 +1,16 @@
 ---
 
-✓ **extensao-ui** concluída
+✓ **fix-coins-parse-css** concluída
 
-**Executado:** Modificado `admin/class-admin-page.php` para incluir o bloco de campos de coins no formulário (input `#cc-pack-coins`, select `#cc-pack-coins-platform`, div `#cc-coins-price-preview`) e adicionado `csCalcUrl` ao `wp_localize_script`. Modificado `admin/admin.js` para declarar `coinsDebounce` e `csCalcUrl`, resetar/preencher/enviar campos de coins nos handlers de cancel/edit/save, exibir span de coins nos cards com `formatCoins()`, e acionar preview de preço via `triggerCoinsPreview()` com listener de input/change.
+**Executado:**
+1. `admin/class-admin-page.php` — input `#cc-pack-coins` alterado para `type="text"` com placeholder `"ex: 200k, 1kk, 500k"` e `autocomplete="off"`
+2. `admin/admin.js` — função `parseCoins(str)` adicionada dentro de `initCrud()`, antes de `formatCoins()`
+3. `admin/admin.js` — `triggerCoinsPreview()` substituiu `parseInt(...)` por `parseCoins(...)`
+4. `admin/admin.js` — save handler substituiu `parseInt(...)` por `parseCoins(...)`
+5. `admin/admin.js` — cancel agora seta `val('')` em vez de `val('0')`
+6. `admin/admin.js` — edit preenche com `formatCoins(pack.coins_amount)` quando `> 0`, senão `''`
+7. `assets/style.css` — bloco CSS adicionado ao final cobrindo `#cc-pack-coins`, `#cc-pack-coins-platform`, `.cc-admin-coins-row`, `.cc-admin-coins-preview` e `.cc-admin-pack-card-coins`
 
-**Verificação:** passou — todos os 9 critérios da translation atendidos.
+**Verificação:** passou — todos os 7 critérios da translation atendidos.
 
 **Próxima fase:** `null` — sistema completo.

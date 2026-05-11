@@ -61,7 +61,7 @@ class CC_Packs_Admin_Page {
                     <div class="cc-admin-field">
                         <label>Coins no Pack <small>(opcional)</small></label>
                         <div class="cc-admin-coins-row">
-                            <input type="number" id="cc-pack-coins" name="coins_amount" min="0" step="100000" value="0" placeholder="0">
+                            <input type="text" id="cc-pack-coins" name="coins_amount" placeholder="ex: 200k, 1kk, 500k" autocomplete="off">
                             <select id="cc-pack-coins-platform">
                                 <option value="ps">PS</option>
                                 <option value="xbox">Xbox</option>

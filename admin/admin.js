@@ -61,6 +61,15 @@
 
         if (!$list.length) return;
 
+        function parseCoins(str) {
+            str = String(str || '').toLowerCase().trim().replace(/[\s\t]/g, '');
+            str = str.replace(/\.(?=\d{3}(\D|$))/g, '');
+            str = str.replace(',', '.');
+            if (str.slice(-2) === 'kk') return Math.round(parseFloat(str) * 1000000) || 0;
+            if (str.slice(-1) === 'k')  return Math.round(parseFloat(str) * 1000)    || 0;
+            return parseInt(str.replace(/\D/g, ''), 10) || 0;
+        }
+
         function formatCoins(n) {
             n = parseInt(n) || 0;
             if (n <= 0) return '0';
@@ -73,7 +82,7 @@
 
         function triggerCoinsPreview() {
             clearTimeout(coinsDebounce);
-            var coins    = parseInt($('#cc-pack-coins').val()) || 0;
+            var coins    = parseCoins($('#cc-pack-coins').val());
             var platform = $('#cc-pack-coins-platform').val() || 'ps';
             var $preview = $('#cc-coins-price-preview');
             if (coins <= 0 || !csCalcUrl) { $preview.hide().text(''); return; }
@@ -113,7 +122,7 @@
             $('#cc-pack-name').val('');
             $('#cc-pack-price').val('');
             $search.val('');
-            $('#cc-pack-coins').val('0');
+            $('#cc-pack-coins').val('');
             $('#cc-pack-coins-platform').val('ps');
             $('#cc-coins-price-preview').hide().text('');
             $cancel.hide();
@@ -126,7 +135,7 @@
         $save.on('click', function () {
             var name  = $('#cc-pack-name').val().trim();
             var price = parseFloat($('#cc-pack-price').val());
-            var coinsAmount   = parseInt($('#cc-pack-coins').val())        || 0;
+            var coinsAmount   = parseCoins($('#cc-pack-coins').val());
             var coinsPlatform = $('#cc-pack-coins-platform').val()         || 'ps';
             if (!name)                  { alert('Informe o nome do pack.');    return; }
             if (isNaN(price) || price < 0) { alert('Informe um preço válido.'); return; }
@@ -282,7 +291,7 @@
             selectedDmeIds = (pack.dme_ids || []).map(String);
             $('#cc-pack-name').val(pack.name);
             $('#cc-pack-price').val(pack.price);
-            $('#cc-pack-coins').val(pack.coins_amount || 0);
+            $('#cc-pack-coins').val(pack.coins_amount > 0 ? formatCoins(pack.coins_amount) : '');
             $('#cc-pack-coins-platform').val(pack.coins_platform || 'ps');
             triggerCoinsPreview();
             $cancel.show();
