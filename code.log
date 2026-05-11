@@ -1,16 +1,17 @@
 ---
 
-✓ **fix-coins-parse-css** concluída
+✓ **fix-store-display** concluída
 
 **Executado:**
-1. `admin/class-admin-page.php` — input `#cc-pack-coins` alterado para `type="text"` com placeholder `"ex: 200k, 1kk, 500k"` e `autocomplete="off"`
-2. `admin/admin.js` — função `parseCoins(str)` adicionada dentro de `initCrud()`, antes de `formatCoins()`
-3. `admin/admin.js` — `triggerCoinsPreview()` substituiu `parseInt(...)` por `parseCoins(...)`
-4. `admin/admin.js` — save handler substituiu `parseInt(...)` por `parseCoins(...)`
-5. `admin/admin.js` — cancel agora seta `val('')` em vez de `val('0')`
-6. `admin/admin.js` — edit preenche com `formatCoins(pack.coins_amount)` quando `> 0`, senão `''`
-7. `assets/style.css` — bloco CSS adicionado ao final cobrindo `#cc-pack-coins`, `#cc-pack-coins-platform`, `.cc-admin-coins-row`, `.cc-admin-coins-preview` e `.cc-admin-pack-card-coins`
+1. `formatCoins(n)` adicionada como helper em `public/store.js`
+2. `updateBar()` usa `total_price || price`
+3. `renderGrid()` usa `total_price || price`
+4. Modal header usa `total_price || price`
+5. Bloco `!found.length` verifica `coins_amount > 0` antes de exibir mensagem vazia
+6. `buildCoinsCard(pack)` chamado após `found.forEach` quando `coins_amount > 0`
+7. Função `buildCoinsCard()` definida antes de `openPackModal`
+8. CSS `.cc-modal-coins-item`, `.cc-modal-coins-badge`, `.cc-modal-coins-icon` e `.cc-modal-coins-label` adicionado ao final de `assets/style.css`
 
-**Verificação:** passou — todos os 7 critérios da translation atendidos.
+**Verificação:** passou — todas as 8 condições da translation satisfeitas.
 
-**Próxima fase:** `null` — sistema completo.
+**Próxima fase:** `fix-session-desc`

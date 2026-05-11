@@ -36,13 +36,23 @@
         return '';
     }
 
+    function formatCoins(n) {
+        n = parseInt(n) || 0;
+        if (n <= 0) return '0';
+        if (n >= 1000000) {
+            var kk = n / 1000000;
+            return (kk === Math.floor(kk) ? kk.toFixed(0) : kk.toFixed(1)) + 'kk';
+        }
+        return Math.floor(n / 1000) + 'k';
+    }
+
     /* ---- checkout bar ---- */
     function updateBar() {
         var count = 0, total = 0;
         packsCache.forEach(function (p) {
             var q = qty[p.id] || 0;
             count += q;
-            total += q * parseFloat(p.price);
+            total += q * parseFloat(p.total_price || p.price);
         });
 
         if (count > 0) {
@@ -79,7 +89,7 @@
         $count.text(packs.length + (packs.length === 1 ? ' pack' : ' packs'));
 
         packs.forEach(function (pack) {
-            var price = parseFloat(pack.price).toFixed(2).replace('.', ',');
+            var price = parseFloat(pack.total_price || pack.price).toFixed(2).replace('.', ',');
             var id    = String(pack.id);
 
             var $card = $(
@@ -148,6 +158,19 @@
         });
     }
 
+    function buildCoinsCard(pack) {
+        var label    = formatCoins(pack.coins_amount) + ' Coins ' + (pack.coins_platform || 'PS').toUpperCase();
+        var $item    = $('<div class="cc-modal-dme-item cc-modal-coins-item">');
+        var $badge   = $(
+            '<div class="cc-modal-coins-badge">' +
+            '  <span class="cc-modal-coins-icon">' + '🪙' + '</span>' +
+            '  <span class="cc-modal-coins-label">' + label + '</span>' +
+            '</div>'
+        );
+        $item.append($badge);
+        return $item;
+    }
+
     /* ---- modal ---- */
     function openPackModal(packId) {
         var pack = packsCache.find(function (p) { return String(p.id) === String(packId); });
@@ -163,7 +186,7 @@
             '      <div>' +
             '        <span class="cc-modal-badge">Conteúdo do pack</span>' +
             '        <h2 class="cc-modal-title">' + pack.name + '</h2>' +
-            '        <p class="cc-modal-price">R$ ' + parseFloat(pack.price).toFixed(2).replace('.', ',') + '</p>' +
+            '        <p class="cc-modal-price">R$ ' + parseFloat(pack.total_price || pack.price).toFixed(2).replace('.', ',') + '</p>' +
             '      </div>' +
             '      <button class="cc-modal-close" aria-label="Fechar">✕</button>' +
             '    </div>' +
@@ -203,7 +226,13 @@
         getFeed().then(function (items) {
             var found = items.filter(function (d) { return dmeIds.indexOf(String(d.id)) !== -1; });
             if (!found.length) {
-                $('#cc-modal-cards').html('<p class="cc-modal-empty">Nenhum jogador encontrado neste pack.</p>');
+                var $cc = $('#cc-modal-cards');
+                $cc.empty();
+                if (pack.coins_amount > 0) {
+                    $cc.append(buildCoinsCard(pack));
+                } else {
+                    $cc.html('<p class="cc-modal-empty">Nenhum jogador encontrado neste pack.</p>');
+                }
                 return;
             }
             return apiFetch(api + '/render-cards', {
@@ -256,6 +285,10 @@
 
                     $cont.append($item);
                 });
+
+                if (pack.coins_amount > 0) {
+                    $cont.append(buildCoinsCard(pack));
+                }
 
                 $cont.on('click', '.cc-btn-lineups', function () {
                     var id   = $(this).data('dme-id');

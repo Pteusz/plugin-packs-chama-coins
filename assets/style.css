@@ -1345,3 +1345,43 @@ body.cc-modal-open { overflow: hidden !important; }
     margin-top: 2px;
     letter-spacing: -.1px;
 }
+
+/* ==========================================================
+   STORE MODAL — Card de Coins
+   ========================================================== */
+
+.cc-modal-coins-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 190px;
+}
+
+.cc-modal-coins-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background: var(--cc-accent-dim);
+    border: 1px solid rgba(255,102,0,.30);
+    border-radius: var(--cc-r-md);
+    padding: 24px 20px 20px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 20px var(--cc-accent-glow);
+}
+
+.cc-modal-coins-icon {
+    font-size: 36px;
+    line-height: 1;
+    display: block;
+}
+
+.cc-modal-coins-label {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--cc-accent);
+    letter-spacing: -.2px;
+    line-height: 1.2;
+    display: block;
+}
