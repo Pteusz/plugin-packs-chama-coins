@@ -1385,3 +1385,205 @@ body.cc-modal-open { overflow: hidden !important; }
     line-height: 1.2;
     display: block;
 }
+
+/* ==========================================================
+   ADMIN — Cards de Pedido redesenhados
+   ========================================================== */
+
+#cc-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 800px;
+}
+
+.cc-order-card {
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-border-mid);
+    border-radius: var(--cc-r-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color var(--cc-t), box-shadow var(--cc-t);
+}
+.cc-order-card:hover {
+    border-color: var(--cc-border-hi);
+    box-shadow: 0 4px 20px rgba(0,0,0,.35);
+}
+
+.cc-order-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px 14px;
+    background: var(--cc-raised);
+    border-bottom: 1px solid var(--cc-border);
+}
+.cc-order-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.cc-order-buyer {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cc-text);
+    line-height: 1.2;
+}
+.cc-order-date {
+    font-size: 11px;
+    color: var(--cc-text-muted);
+}
+
+.cc-order-section {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--cc-border);
+}
+.cc-order-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--cc-text-muted);
+    margin-bottom: 8px;
+}
+.cc-order-desc {
+    font-size: 13px;
+    color: var(--cc-text-sub);
+    line-height: 1.65;
+    margin-bottom: 10px;
+    word-break: break-word;
+}
+.cc-order-total {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--cc-accent);
+    letter-spacing: -.4px;
+}
+
+.cc-order-account-section {
+    padding: 0;
+    border-bottom: 1px solid var(--cc-border);
+}
+.cc-order-account-toggle {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 13px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--cc-text-sub);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background var(--cc-t), color var(--cc-t);
+    text-align: left;
+}
+.cc-order-account-toggle:hover {
+    background: rgba(255,255,255,.03);
+    color: var(--cc-text);
+}
+.cc-order-toggle-icon {
+    font-size: 9px;
+    color: var(--cc-text-muted);
+    flex-shrink: 0;
+}
+.cc-order-account-body {
+    padding: 6px 20px 16px;
+    border-top: 1px solid var(--cc-border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.cc-order-sub-date {
+    font-size: 11px;
+    color: var(--cc-text-muted);
+    margin-bottom: 2px;
+}
+.cc-order-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.cc-order-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--cc-text-muted);
+    min-width: 72px;
+    padding-top: 2px;
+    flex-shrink: 0;
+}
+.cc-order-field-value {
+    font-size: 13px;
+    color: var(--cc-text);
+    flex: 1;
+    word-break: break-all;
+    line-height: 1.5;
+}
+.cc-order-backup-codes {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    background: var(--cc-bg);
+    border: 1px solid var(--cc-border);
+    border-radius: var(--cc-r-xs);
+    padding: 8px 12px;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    display: block;
+    width: 100%;
+    color: var(--cc-text-sub);
+}
+.cc-order-senha-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.cc-order-senha-mask {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    letter-spacing: 3px;
+    color: var(--cc-text);
+}
+.cc-order-toggle-senha {
+    background: var(--cc-raised);
+    border: 1px solid var(--cc-border);
+    color: var(--cc-text-sub);
+    border-radius: var(--cc-r-xs);
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--cc-t), color var(--cc-t), border-color var(--cc-t);
+    white-space: nowrap;
+}
+.cc-order-toggle-senha:hover {
+    background: var(--cc-accent);
+    color: #000;
+    border-color: var(--cc-accent);
+}
+.cc-order-photo-thumb {
+    max-width: 120px;
+    max-height: 80px;
+    border-radius: var(--cc-r-xs);
+    object-fit: cover;
+    border: 1px solid var(--cc-border-mid);
+    display: block;
+    transition: opacity var(--cc-t);
+}
+.cc-order-photo-thumb:hover { opacity: .8; }
+
+.cc-order-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    background: var(--cc-raised);
+    flex-wrap: wrap;
+}

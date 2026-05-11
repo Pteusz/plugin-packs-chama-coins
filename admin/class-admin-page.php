@@ -137,12 +137,28 @@ class CC_Packs_Admin_Page {
         $raw_sessions = CC_Packs_Session::get_all_sessions();
 
         $sessions = array_map( function( $s ) {
+            global $wpdb;
             $uid   = intval( $s['user_id'] );
             $user  = get_userdata( $uid );
             $phone = get_user_meta( $uid, 'billing_phone', true );
             if ( ! $phone ) $phone = get_user_meta( $uid, 'phone', true );
             $s['buyer_name'] = $user ? $user->display_name : 'Usuário #' . $uid;
             $s['phone']      = sanitize_text_field( $phone ?: '' );
+
+            $sub_table  = $wpdb->prefix . 'cs_user_submissions';
+            $sub_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $sub_table ) ) === $sub_table;
+            if ( $sub_exists && ! empty( $s['token'] ) ) {
+                $sub = $wpdb->get_row(
+                    $wpdb->prepare(
+                        "SELECT email, senha, backup_codes, backup_photo_url, submission_datetime FROM {$sub_table} WHERE token = %s ORDER BY id DESC LIMIT 1",
+                        $s['token']
+                    ),
+                    ARRAY_A
+                );
+                $s['submission'] = $sub ?: null;
+            } else {
+                $s['submission'] = null;
+            }
             return $s;
         }, $raw_sessions );
 

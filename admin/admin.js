@@ -333,40 +333,108 @@
                 renderOrders(sessions, packMap);
             });
 
-        function compLabel(composition, packMap) {
-            return Object.keys(composition).map(function (pid) {
-                var p = packMap[pid];
-                return (p ? p.name : 'Pack #' + pid) + ' ×' + composition[pid];
-            }).join(', ');
+        function esc(str) {
+            return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function fmtDate(str) {
+            if (!str) return '';
+            var d = new Date(str.replace(' ', 'T'));
+            if (isNaN(d.getTime())) return str;
+            return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         }
 
         function renderOrders(sessions, packMap) {
+            var statusLabel = { pending: 'Pendente', approved: 'Aprovado', rejected: 'Reprovado' };
+
             sessions.forEach(function (s) {
-                var comp   = compLabel(s.composition || {}, packMap);
-                var total  = parseFloat(s.total || 0).toFixed(2).replace('.', ',');
-                var phone  = (s.phone || '').replace(/\D/g, '');
-                var waText = encodeURIComponent('Olá ' + (s.buyer_name || '') + '! Seu pedido de Packs Chama Coins está sendo processado.');
-                var waLink = phone
-                    ? '<a class="cc-admin-btn cc-admin-btn-wa" href="https://wa.me/55' + phone + '?text=' + waText + '" target="_blank">WhatsApp</a>'
-                    : '';
-                var statusClass = 'cc-status-' + (s.status || 'pending');
-                var $row = $(
-                    '<div class="cc-admin-order-item">' +
-                    '<div class="cc-admin-order-header">' +
-                    '<span class="cc-admin-order-buyer">' + (s.buyer_name || 'Usuário #' + s.user_id) + '</span>' +
-                    '<span class="cc-status-badge ' + statusClass + '">' + (s.status || 'pending') + '</span>' +
-                    waLink +
-                    '</div>' +
-                    '<div class="cc-admin-order-detail">' +
-                    '<span class="cc-admin-order-comp">' + comp + '</span>' +
-                    '<span class="cc-admin-order-total">R$ ' + total + '</span>' +
-                    '</div>' +
-                    '<div class="cc-admin-order-btns">' +
-                    '<button class="cc-admin-btn cc-approve-btn" data-id="' + s.id + '">Aprovar</button>' +
-                    '<button class="cc-admin-btn cc-admin-btn-danger cc-reject-btn" data-id="' + s.id + '">Reprovar</button>' +
-                    '</div></div>'
+                var phone     = (s.phone || '').replace(/\D/g, '');
+                var waText    = encodeURIComponent('Olá ' + (s.buyer_name || '') + '! Seu pedido de Packs Chama Coins está pronto.');
+                var waHref    = phone ? 'https://wa.me/55' + phone + '?text=' + waText : '';
+                var stCls     = 'cc-status-' + (s.status || 'pending');
+                var stLabel   = statusLabel[s.status] || (s.status || 'pending');
+                var desc      = s.description || Object.keys(s.composition || {}).map(function (pid) {
+                    return (packMap[pid] ? packMap[pid].name : 'Pack #' + pid) + ' ×' + s.composition[pid];
+                }).join(', ');
+                var total     = parseFloat(s.total || 0).toFixed(2).replace('.', ',');
+                var sub       = s.submission || null;
+                var hasSub    = sub && (sub.email || sub.senha);
+
+                var $card = $('<div class="cc-order-card">');
+
+                // — Header —
+                $card.append(
+                    '<div class="cc-order-header">' +
+                    '  <div class="cc-order-header-left">' +
+                    '    <span class="cc-order-buyer">' + esc(s.buyer_name || 'Usuário #' + s.user_id) + '</span>' +
+                    (s.created_at ? '<span class="cc-order-date">📅 ' + fmtDate(s.created_at) + '</span>' : '') +
+                    '  </div>' +
+                    '  <span class="cc-status-badge ' + stCls + '">' + stLabel + '</span>' +
+                    '</div>'
                 );
-                $list.append($row);
+
+                // — Conteúdo do pedido —
+                $card.append(
+                    '<div class="cc-order-section">' +
+                    '  <div class="cc-order-section-title">📦 Conteúdo do pedido</div>' +
+                    '  <div class="cc-order-desc">' + esc(desc) + '</div>' +
+                    '  <div class="cc-order-total">R$ ' + total + '</div>' +
+                    '</div>'
+                );
+
+                // — Dados da conta (collapsible) —
+                if (hasSub) {
+                    var photoHtml = sub.backup_photo_url
+                        ? '<div class="cc-order-field"><span class="cc-order-field-label">Foto</span>' +
+                          '<a href="' + esc(sub.backup_photo_url) + '" target="_blank"><img src="' + esc(sub.backup_photo_url) + '" class="cc-order-photo-thumb"></a></div>'
+                        : '';
+                    var backupHtml = sub.backup_codes
+                        ? '<div class="cc-order-field"><span class="cc-order-field-label">Backup</span>' +
+                          '<span class="cc-order-field-value cc-order-backup-codes">' + esc(sub.backup_codes) + '</span></div>'
+                        : '';
+                    $card.append(
+                        '<div class="cc-order-section cc-order-account-section">' +
+                        '  <button type="button" class="cc-order-account-toggle">' +
+                        '    <span>🔑 Dados da Conta</span><span class="cc-order-toggle-icon">▼</span>' +
+                        '  </button>' +
+                        '  <div class="cc-order-account-body" hidden>' +
+                        (sub.submission_datetime ? '<div class="cc-order-sub-date">Enviado em: ' + fmtDate(sub.submission_datetime) + '</div>' : '') +
+                        '  <div class="cc-order-field"><span class="cc-order-field-label">E-mail</span>' +
+                        '    <span class="cc-order-field-value">' + esc(sub.email || '—') + '</span></div>' +
+                        '  <div class="cc-order-field"><span class="cc-order-field-label">Senha</span>' +
+                        '    <span class="cc-order-field-value cc-order-senha-wrap">' +
+                        '      <span class="cc-order-senha-mask" data-val="' + esc(sub.senha || '') + '">••••••••</span>' +
+                        '      <button type="button" class="cc-order-toggle-senha">Mostrar</button>' +
+                        '    </span></div>' +
+                        backupHtml + photoHtml +
+                        '  </div>' +
+                        '</div>'
+                    );
+                }
+
+                // — Ações —
+                var $actions = $('<div class="cc-order-actions">');
+                if (waHref) $actions.append('<a class="cc-admin-btn cc-admin-btn-wa" href="' + waHref + '" target="_blank">💬 WhatsApp</a>');
+                $actions.append(
+                    '<button class="cc-admin-btn cc-approve-btn" data-id="' + s.id + '">✓ Aprovar</button>' +
+                    '<button class="cc-admin-btn cc-admin-btn-danger cc-reject-btn" data-id="' + s.id + '">✕ Reprovar</button>'
+                );
+                $card.append($actions);
+                $list.append($card);
+            });
+
+            $list.on('click', '.cc-order-account-toggle', function () {
+                var $body = $(this).siblings('.cc-order-account-body');
+                var open  = !$body.prop('hidden');
+                $body.prop('hidden', open);
+                $(this).find('.cc-order-toggle-icon').text(open ? '▼' : '▲');
+            });
+
+            $list.on('click', '.cc-order-toggle-senha', function () {
+                var $mask    = $(this).siblings('.cc-order-senha-mask');
+                var showing  = $(this).data('showing');
+                $mask.text(showing ? '••••••••' : $mask.data('val'));
+                $(this).text(showing ? 'Mostrar' : 'Ocultar').data('showing', !showing);
             });
         }
 
