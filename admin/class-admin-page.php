@@ -59,6 +59,18 @@ class CC_Packs_Admin_Page {
                         <input type="number" id="cc-pack-price" name="price" step="0.01" min="0" required>
                     </div>
                     <div class="cc-admin-field">
+                        <label>Coins no Pack <small>(opcional)</small></label>
+                        <div class="cc-admin-coins-row">
+                            <input type="number" id="cc-pack-coins" name="coins_amount" min="0" step="100000" value="0" placeholder="0">
+                            <select id="cc-pack-coins-platform">
+                                <option value="ps">PS</option>
+                                <option value="xbox">Xbox</option>
+                                <option value="pc">PC</option>
+                            </select>
+                        </div>
+                        <div id="cc-coins-price-preview" class="cc-admin-coins-preview" style="display:none"></div>
+                    </div>
+                    <div class="cc-admin-field">
                         <label for="cc-dme-search">Buscar DMEs</label>
                         <input type="text" id="cc-dme-search" placeholder="Filtrar por nome...">
                         <span id="cc-selected-count"></span>
@@ -116,9 +128,10 @@ class CC_Packs_Admin_Page {
         }
 
         wp_localize_script( 'cc-packs-admin', 'ccPacksAdmin', [
-            'apiUrl'  => rest_url( CC_PACKS_API_NS ),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
-            'sbcFeed' => home_url( CC_PACKS_SBC_FEED ),
+            'apiUrl'    => rest_url( CC_PACKS_API_NS ),
+            'nonce'     => wp_create_nonce( 'wp_rest' ),
+            'sbcFeed'   => home_url( CC_PACKS_SBC_FEED ),
+            'csCalcUrl' => rest_url( 'coins-selector/v1/calc' ),
         ] );
 
         $raw_sessions = CC_Packs_Session::get_all_sessions();

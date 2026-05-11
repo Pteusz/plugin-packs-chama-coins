@@ -10,6 +10,8 @@
     var selectedDmeIds = [];
     var feedCache      = null;
     var allFeedItems   = [];
+    var coinsDebounce = null;
+    var csCalcUrl     = (window.ccPacksAdmin && ccPacksAdmin.csCalcUrl) ? ccPacksAdmin.csCalcUrl : null;
 
     function apiFetch(url, opts) {
         opts = opts || {};
@@ -59,6 +61,40 @@
 
         if (!$list.length) return;
 
+        function formatCoins(n) {
+            n = parseInt(n) || 0;
+            if (n <= 0) return '0';
+            if (n >= 1000000) {
+                var kk = n / 1000000;
+                return (kk === Math.floor(kk) ? kk.toFixed(0) : kk.toFixed(1)) + 'kk';
+            }
+            return Math.floor(n / 1000) + 'k';
+        }
+
+        function triggerCoinsPreview() {
+            clearTimeout(coinsDebounce);
+            var coins    = parseInt($('#cc-pack-coins').val()) || 0;
+            var platform = $('#cc-pack-coins-platform').val() || 'ps';
+            var $preview = $('#cc-coins-price-preview');
+            if (coins <= 0 || !csCalcUrl) { $preview.hide().text(''); return; }
+            $preview.show().text('Calculando...');
+            coinsDebounce = setTimeout(function () {
+                var url = csCalcUrl + '?mode=lance&platform=' + encodeURIComponent(platform) + '&coins=' + coins;
+                fetch(url, { headers: { 'X-WP-Nonce': nonce } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data && data.price_formatted) {
+                            $preview.text('🪙 Preço dos coins: ' + data.price_formatted).show();
+                        } else {
+                            $preview.hide().text('');
+                        }
+                    })
+                    .catch(function () { $preview.hide().text(''); });
+            }, 450);
+        }
+
+        $(document).on('input change', '#cc-pack-coins, #cc-pack-coins-platform', triggerCoinsPreview);
+
         loadPacks();
 
         // Carrega todos os DMEs ao iniciar (sem filtro)
@@ -77,6 +113,9 @@
             $('#cc-pack-name').val('');
             $('#cc-pack-price').val('');
             $search.val('');
+            $('#cc-pack-coins').val('0');
+            $('#cc-pack-coins-platform').val('ps');
+            $('#cc-coins-price-preview').hide().text('');
             $cancel.hide();
             $title.text('Novo Pack');
             $save.text('Salvar Pack');
@@ -87,11 +126,13 @@
         $save.on('click', function () {
             var name  = $('#cc-pack-name').val().trim();
             var price = parseFloat($('#cc-pack-price').val());
+            var coinsAmount   = parseInt($('#cc-pack-coins').val())        || 0;
+            var coinsPlatform = $('#cc-pack-coins-platform').val()         || 'ps';
             if (!name)                  { alert('Informe o nome do pack.');    return; }
             if (isNaN(price) || price < 0) { alert('Informe um preço válido.'); return; }
             if (!selectedDmeIds.length) { alert('Selecione ao menos 1 DME.'); return; }
 
-            var data   = { name: name, price: price, dme_ids: selectedDmeIds.slice() };
+            var data   = { name: name, price: price, dme_ids: selectedDmeIds.slice(), coins_amount: coinsAmount, coins_platform: coinsPlatform };
             var url    = api + '/packs' + (editingId ? '/' + editingId : '');
             var method = editingId ? 'PUT' : 'POST';
             $save.prop('disabled', true).text('Salvando...');
@@ -198,13 +239,14 @@
                         return;
                     }
                     packs.forEach(function (pack) {
-                        var price = parseFloat(pack.price).toFixed(2).replace('.', ',');
+                        var price = parseFloat(pack.total_price || pack.price).toFixed(2).replace('.', ',');
                         var $card = $(
                             '<div class="cc-admin-pack-card" data-id="' + pack.id + '">' +
                             '  <div class="cc-admin-pack-card-body">' +
                             '    <span class="cc-admin-pack-card-name">' + pack.name + '</span>' +
                             '    <span class="cc-admin-pack-card-price">R$ ' + price + '</span>' +
                             '    <span class="cc-admin-pack-card-count">' + (pack.dme_ids ? pack.dme_ids.length : 0) + ' DMEs</span>' +
+                            (pack.coins_amount > 0 ? '    <span class="cc-admin-pack-card-coins">🪙 ' + formatCoins(pack.coins_amount) + ' (' + (pack.coins_platform || 'ps').toUpperCase() + ')</span>' : '') +
                             '  </div>' +
                             '  <div class="cc-admin-pack-kebab-wrap">' +
                             '    <button class="cc-admin-pack-kebab" title="Opções">⋮</button>' +
@@ -240,6 +282,9 @@
             selectedDmeIds = (pack.dme_ids || []).map(String);
             $('#cc-pack-name').val(pack.name);
             $('#cc-pack-price').val(pack.price);
+            $('#cc-pack-coins').val(pack.coins_amount || 0);
+            $('#cc-pack-coins-platform').val(pack.coins_platform || 'ps');
+            triggerCoinsPreview();
             $cancel.show();
             $title.text('Editar Pack');
             $save.text('Atualizar Pack');

@@ -1,16 +1,9 @@
 ---
 
-✓ **extensao-logica** concluída
+✓ **extensao-ui** concluída
 
-**Executado:**
-- `class-crud.php` — `create()`: adicionados `coins_amount` (`%d`) e `coins_platform` (`%s`) no insert; array de formatos atualizado para `['%s','%f','%s','%d','%s','%d']`
-- `class-crud.php` — `update()`: tratamento condicional de `coins_amount` e `coins_platform`
-- `class-crud.php` — `get()`, `get_all()`, `get_by_adm()`: normalização de `coins_amount` como int e `coins_platform` como string após decode do JSON
-- `class-crud.php` — novo método `get_total_price()` com chamada a `CS_Core::calc()` quando disponível
-- `class-session.php` — `calculate_total()`: substituído `$pack['price']` por `CC_Packs_CRUD::get_total_price($pack)`
-- `class-api.php` — `create_pack()`: `coins_amount` e `coins_platform` adicionados ao array passado para `CRUD::create()`
-- `class-api.php` — `get_packs()`: `array_map` injeta `total_price` em cada pack via `get_total_price()`
+**Executado:** Modificado `admin/class-admin-page.php` para incluir o bloco de campos de coins no formulário (input `#cc-pack-coins`, select `#cc-pack-coins-platform`, div `#cc-coins-price-preview`) e adicionado `csCalcUrl` ao `wp_localize_script`. Modificado `admin/admin.js` para declarar `coinsDebounce` e `csCalcUrl`, resetar/preencher/enviar campos de coins nos handlers de cancel/edit/save, exibir span de coins nos cards com `formatCoins()`, e acionar preview de preço via `triggerCoinsPreview()` com listener de input/change.
 
-**Verificação:** passou — todos os 7 critérios satisfeitos
+**Verificação:** passou — todos os 9 critérios da translation atendidos.
 
-**Próxima fase:** `extensao-ui`
+**Próxima fase:** `null` — sistema completo.
