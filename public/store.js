@@ -158,6 +158,31 @@
         });
     }
 
+    function buildSessionDescription(composition) {
+        var parts = [];
+        composition.forEach(function (item) {
+            var pack = packsCache.find(function (p) { return String(p.id) === String(item.pack_id); });
+            if (!pack) { parts.push('Pack #' + item.pack_id + ' x' + item.qty); return; }
+
+            var names = [];
+            if (feedCache && pack.dme_ids && pack.dme_ids.length) {
+                var ids = pack.dme_ids.map(String);
+                feedCache.forEach(function (d) {
+                    if (ids.indexOf(String(d.id)) !== -1 && d.name) names.push(d.name);
+                });
+            }
+
+            if (pack.coins_amount > 0) {
+                names.push(formatCoins(pack.coins_amount) + ' Coins ' + (pack.coins_platform || 'PS').toUpperCase());
+            }
+
+            var line = item.qty + 'x ' + pack.name;
+            if (names.length) line += ' [' + names.join(', ') + ']';
+            parts.push(line);
+        });
+        return parts.join(' | ');
+    }
+
     function buildCoinsCard(pack) {
         var label    = formatCoins(pack.coins_amount) + ' Coins ' + (pack.coins_platform || 'PS').toUpperCase();
         var $item    = $('<div class="cc-modal-dme-item cc-modal-coins-item">');
@@ -342,10 +367,11 @@
         var $btn = $(this);
         $btn.prop('disabled', true).text('Aguarde...');
 
+        var description = buildSessionDescription(composition);
         apiFetch(api + '/session', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ composition: composition }),
+            body:    JSON.stringify({ composition: composition, description: description }),
         })
         .then(function (r) { return r.json(); })
         .then(function (res) {

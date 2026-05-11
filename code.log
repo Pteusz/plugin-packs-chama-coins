@@ -1,17 +1,16 @@
 ---
 
-✓ **fix-store-display** concluída
+✓ **fix-session-desc** concluída
 
 **Executado:**
-1. `formatCoins(n)` adicionada como helper em `public/store.js`
-2. `updateBar()` usa `total_price || price`
-3. `renderGrid()` usa `total_price || price`
-4. Modal header usa `total_price || price`
-5. Bloco `!found.length` verifica `coins_amount > 0` antes de exibir mensagem vazia
-6. `buildCoinsCard(pack)` chamado após `found.forEach` quando `coins_amount > 0`
-7. Função `buildCoinsCard()` definida antes de `openPackModal`
-8. CSS `.cc-modal-coins-item`, `.cc-modal-coins-badge`, `.cc-modal-coins-icon` e `.cc-modal-coins-label` adicionado ao final de `assets/style.css`
+1. `class-activator.php` / `create_tables()` — adicionado `description TEXT DEFAULT NULL` após `composition` em `$sql2`
+2. `class-activator.php` / `maybe_migrate()` — adicionado bloco que faz `ALTER TABLE wp_cc_pack_sessions ADD COLUMN description` se ausente
+3. `class-session.php` / `create()` — assinatura estendida com `string $description = ''`; campo inserido no `$wpdb->insert()` com formato `'%s'`
+4. `class-api.php` / `create_session()` — extrai `description` do body com `sanitize_textarea_field`, passa para `Session::create()`
+5. `store.js` — `buildSessionDescription()` adicionada antes de `buildCoinsCard()`
+6. `store.js` — checkout chama `buildSessionDescription()` e envia `description` no payload JSON
+7. `form-geral-pack.patch.php` — SELECT inclui coluna `description`; lógica usa `$row['description']` quando preenchida, com fallback para o loop de nomes de pack
 
-**Verificação:** passou — todas as 8 condições da translation satisfeitas.
+**Verificação:** (1) ✓ `$sql2` contém `description TEXT DEFAULT NULL` após `composition` — (2) ✓ `maybe_migrate()` aplica `ALTER TABLE` em `wp_cc_pack_sessions` — (3) ✓ `Session::create()` aceita `$description` e insere com `'%s'` — (4) ✓ `create_session()` extrai e passa `$description` — (5) ✓ `buildSessionDescription()` definida antes de `buildCoinsCard()` — (6) ✓ checkout envia `description` — (7) ✓ `fg_load_pack_order_by_token()` usa `$row['description']` com fallback
 
-**Próxima fase:** `fix-session-desc`
+**Próxima fase:** `null` — sistema completo.

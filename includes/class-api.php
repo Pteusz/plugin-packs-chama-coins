@@ -90,7 +90,8 @@ class CC_Packs_API {
             $qty = intval( $item['qty'] ?? 1 );
             if ( $pid > 0 ) $composition[ $pid ] = ( $composition[ $pid ] ?? 0 ) + $qty;
         }
-        $token = CC_Packs_Session::create( get_current_user_id(), $composition );
+        $description = sanitize_textarea_field( $body['description'] ?? '' );
+        $token = CC_Packs_Session::create( get_current_user_id(), $composition, $description );
         if ( ! $token ) return new WP_REST_Response( [ 'error' => 'Erro ao criar sessão' ], 500 );
         return new WP_REST_Response( [ 'token' => $token, 'redirect' => add_query_arg( 'token', $token, CC_PACKS_FORM_BASE_URL ) ], 201 );
     }

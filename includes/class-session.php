@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class CC_Packs_Session {
 
-    public static function create( int $user_id, array $composition ): mixed {
+    public static function create( int $user_id, array $composition, string $description = '' ): mixed {
         global $wpdb;
         $table  = $wpdb->prefix . CC_PACKS_SESSIONS_TABLE;
         $token  = self::generate_token();
@@ -22,10 +22,11 @@ class CC_Packs_Session {
                 'token'       => $token,
                 'user_id'     => $user_id,
                 'composition' => wp_json_encode( $composition ),
+                'description' => $description,
                 'total'       => $total,
                 'status'      => CC_PACKS_STATUS_PENDING,
             ],
-            [ '%s', '%d', '%s', '%f', '%s' ]
+            [ '%s', '%d', '%s', '%s', '%f', '%s' ]
         );
         return $result ? $token : false;
     }

@@ -34,6 +34,7 @@ class CC_Packs_Activator {
             token VARCHAR(64) NOT NULL,
             user_id INT UNSIGNED NOT NULL,
             composition JSON NOT NULL,
+            description TEXT DEFAULT NULL,
             total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
             status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -56,6 +57,11 @@ class CC_Packs_Activator {
         }
         if ( ! in_array( 'coins_platform', $cols, true ) ) {
             $wpdb->query( "ALTER TABLE {$table} ADD COLUMN coins_platform VARCHAR(10) NOT NULL DEFAULT 'ps' AFTER coins_amount" );
+        }
+        $t2    = $wpdb->prefix . CC_PACKS_SESSIONS_TABLE;
+        $cols2 = $wpdb->get_col( "SHOW COLUMNS FROM {$t2}" );
+        if ( ! in_array( 'description', $cols2, true ) ) {
+            $wpdb->query( "ALTER TABLE {$t2} ADD COLUMN description TEXT DEFAULT NULL AFTER composition" );
         }
     }
 
