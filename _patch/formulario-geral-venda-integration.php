@@ -275,7 +275,7 @@ function fg_load_pack_order_by_token($token){
 
     $row = $wpdb->get_row(
         $wpdb->prepare(
-            "SELECT id, token, user_id, composition, total, status, created_at
+            "SELECT id, token, user_id, composition, description, total, status, created_at
              FROM {$table}
              WHERE token=%s
              LIMIT 1",
@@ -292,17 +292,22 @@ function fg_load_pack_order_by_token($token){
     $composition = json_decode($row['composition'] ?? '{}', true);
     if (!is_array($composition)) $composition = [];
 
-    $parts = [];
-    $packs_table = $wpdb->prefix . 'cc_packs';
-    foreach ($composition as $pack_id => $qty) {
-        $pack = $wpdb->get_row(
-            $wpdb->prepare("SELECT name FROM {$packs_table} WHERE id = %d", intval($pack_id)),
-            ARRAY_A
-        );
-        $name = $pack ? fg_sline($pack['name']) : "Pack #{$pack_id}";
-        $parts[] = "{$name} x{$qty}";
+    $stored_desc = isset($row['description']) ? trim((string)$row['description']) : '';
+    if ($stored_desc !== '') {
+        $desc = $stored_desc;
+    } else {
+        $parts = [];
+        $packs_table = $wpdb->prefix . 'cc_packs';
+        foreach ($composition as $pack_id => $qty) {
+            $pack = $wpdb->get_row(
+                $wpdb->prepare("SELECT name FROM {$packs_table} WHERE id = %d", intval($pack_id)),
+                ARRAY_A
+            );
+            $name = $pack ? fg_sline($pack['name']) : "Pack #{$pack_id}";
+            $parts[] = "{$name} x{$qty}";
+        }
+        $desc = $parts ? implode(', ', $parts) : 'Packs selecionados';
     }
-    $desc = $parts ? implode(', ', $parts) : 'Packs selecionados';
 
     $product_id = intval(get_option('cc_packs_product_id', 0));
     if (!$product_id) $product_id = intval(get_option('cc_packs_wc_product_id', 0));
