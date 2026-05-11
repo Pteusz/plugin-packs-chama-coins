@@ -1,12 +1,14 @@
 ---
 
-✓ **redesign-orders** concluída
+✓ **access-gate** concluída
 
 **Executado:**
-- `admin/class-admin-page.php` — `array_map` em `enqueue_assets()` estendido para consultar `cs_user_submissions` por token e injetar `$s['submission']` (email, senha, backup_codes, backup_photo_url, submission_datetime)
-- `admin/admin.js` — `initOrders()` substituída integralmente: funções `esc()`, `fmtDate()`, `renderOrders()` com cards `.cc-order-card`, seção collapsible "Dados da Conta" com toggle de senha, e ações de aprovar/reprovar
-- `assets/style.css` — bloco de estilos dos cards de pedido adicionado ao final, cobrindo todos os seletores exigidos
+1. `plugin-packs-chama-coins.php` — `add_action('init', session_start())` protegido por `headers_sent()` inserido após os `define()`s
+2. `includes/class-activator.php` — `add_option('cc_packs_access_code', '24654785Gm@')` adicionado em `activate()` após `maybe_migrate()`
+3. `admin/class-admin-page.php` — `render()` substituído: verifica `current_user_can('manage_options')`, checa `$_SESSION['cc_packs_gate_ok']`, processa POST com `wp_verify_nonce` + `hash_equals`, retorna `render_access_gate()` se não verificado
+4. `admin/class-admin-page.php` — método `render_access_gate(bool $error)` adicionado com form POST, `wp_nonce_field('cc_gate_submit')`, campo `password` e mensagem de erro condicional
+5. `assets/style.css` — estilos do portão (`.cc-access-gate`, `.cc-access-gate-card`, `.cc-access-gate-input`, `.cc-access-gate-error`, `.cc-access-gate-btn`) adicionados ao final
 
-**Verificação:** passou — todos os três pontos da verificação da translation atendidos.
+**Verificação:** passou — todos os 5 pontos confirmados via grep
 
-**Próxima fase:** `null` — sistema completo.
+**Próxima fase:** `null` — sistema completo

@@ -16,7 +16,28 @@ class CC_Packs_Admin_Page {
     }
 
     public function render( array $atts ): string {
-        if ( ! $this->check_access() ) return '';
+        // Admins WordPress: acesso direto
+        if ( ! current_user_can( 'manage_options' ) ) {
+            // Verifica se sessão já validou o código
+            if ( empty( $_SESSION['cc_packs_gate_ok'] ) ) {
+                // Processa envio do formulário de código
+                if ( isset( $_POST['cc_access_code'] ) ) {
+                    if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', 'cc_gate_submit' ) ) {
+                        return $this->render_access_gate( true );
+                    }
+                    $submitted = sanitize_text_field( $_POST['cc_access_code'] );
+                    $stored    = get_option( 'cc_packs_access_code', '24654785Gm@' );
+                    if ( hash_equals( $stored, $submitted ) ) {
+                        $_SESSION['cc_packs_gate_ok'] = true;
+                    } else {
+                        return $this->render_access_gate( true );
+                    }
+                } else {
+                    return $this->render_access_gate( false );
+                }
+            }
+        }
+
         $mode       = isset( $_GET['cc_mode'] ) && $_GET['cc_mode'] === 'orders' ? 'orders' : 'crud';
         $base_url   = get_permalink();
         $crud_url   = remove_query_arg( 'cc_mode', $base_url );
@@ -31,6 +52,36 @@ class CC_Packs_Admin_Page {
 
     private function check_access(): bool {
         return current_user_can( 'manage_options' );
+    }
+
+    private function render_access_gate( bool $error = false ): string {
+        ob_start();
+        ?>
+        <div class="cc-access-gate">
+            <div class="cc-access-gate-card">
+                <span class="cc-access-gate-icon">🔒</span>
+                <h2 class="cc-access-gate-title">Área Restrita</h2>
+                <p class="cc-access-gate-subtitle">Digite o código de acesso para continuar</p>
+                <form class="cc-access-gate-form" method="post">
+                    <?php wp_nonce_field( 'cc_gate_submit' ); ?>
+                    <input
+                        type="password"
+                        name="cc_access_code"
+                        class="cc-access-gate-input"
+                        placeholder="Código de acesso"
+                        autocomplete="off"
+                        autofocus
+                        required
+                    >
+                    <?php if ( $error ) : ?>
+                        <p class="cc-access-gate-error">❌ Código inválido. Tente novamente.</p>
+                    <?php endif; ?>
+                    <button type="submit" class="cc-access-gate-btn">Entrar</button>
+                </form>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 
     private function render_crud_mode(): string {

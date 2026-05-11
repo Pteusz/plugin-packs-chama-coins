@@ -29,6 +29,12 @@ if ( ! defined('CC_PACKS_FORM_BASE_URL') )
 if ( ! defined('CC_PACKS_NONCE_ACTION') )
     define('CC_PACKS_NONCE_ACTION', 'cc_packs_nonce');
 
+add_action( 'init', function () {
+    if ( ! session_id() && ! headers_sent() ) {
+        session_start();
+    }
+}, 1 );
+
 require_once CC_PACKS_DIR . 'includes/class-activator.php';
 require_once CC_PACKS_DIR . 'includes/class-crud.php';
 require_once CC_PACKS_DIR . 'includes/class-session.php';

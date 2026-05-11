@@ -1587,3 +1587,120 @@ body.cc-modal-open { overflow: hidden !important; }
     background: var(--cc-raised);
     flex-wrap: wrap;
 }
+
+/* ==========================================================
+   Portão de Acesso — Código de Acesso
+   ========================================================== */
+
+.cc-access-gate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 40px 16px;
+}
+
+.cc-access-gate-card {
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-border-mid);
+    border-radius: var(--cc-r-lg, 16px);
+    padding: 48px 40px 40px;
+    max-width: 400px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    box-shadow: 0 8px 40px rgba(0,0,0,.5);
+    text-align: center;
+}
+
+.cc-access-gate-icon {
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 20px;
+    display: block;
+    filter: drop-shadow(0 0 16px rgba(255,102,0,.4));
+}
+
+.cc-access-gate-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--cc-text);
+    margin: 0 0 8px;
+    letter-spacing: -.3px;
+}
+
+.cc-access-gate-subtitle {
+    font-size: 14px;
+    color: var(--cc-text-muted);
+    margin: 0 0 28px;
+    line-height: 1.5;
+}
+
+.cc-access-gate-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cc-access-gate-input {
+    width: 100%;
+    background: var(--cc-bg);
+    border: 1px solid var(--cc-border-mid);
+    border-radius: var(--cc-r-sm);
+    color: var(--cc-text);
+    padding: 14px 16px;
+    font-size: 15px;
+    outline: none;
+    text-align: center;
+    letter-spacing: 3px;
+    transition: border-color var(--cc-t), box-shadow var(--cc-t);
+    box-sizing: border-box;
+}
+
+.cc-access-gate-input::placeholder {
+    letter-spacing: normal;
+    color: var(--cc-text-muted);
+    font-size: 14px;
+}
+
+.cc-access-gate-input:focus {
+    border-color: var(--cc-accent);
+    box-shadow: 0 0 0 2px var(--cc-accent-dim);
+}
+
+.cc-access-gate-error {
+    font-size: 13px;
+    color: #ff4d4d;
+    background: rgba(255,77,77,.08);
+    border: 1px solid rgba(255,77,77,.2);
+    border-radius: var(--cc-r-xs);
+    padding: 9px 14px;
+    margin: 0;
+}
+
+.cc-access-gate-btn {
+    background: var(--cc-accent);
+    color: #000;
+    border: none;
+    border-radius: var(--cc-r-sm);
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity var(--cc-t), transform var(--cc-t);
+    letter-spacing: -.1px;
+    margin-top: 4px;
+}
+
+.cc-access-gate-btn:hover {
+    opacity: .88;
+    transform: translateY(-1px);
+}
+
+.cc-access-gate-btn:active {
+    transform: translateY(0);
+    opacity: 1;
+}

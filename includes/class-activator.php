@@ -9,6 +9,7 @@ class CC_Packs_Activator {
     public static function activate(): void {
         self::create_tables();
         self::maybe_migrate();
+        add_option( 'cc_packs_access_code', '24654785Gm@' );
         self::register_wc_product();
     }
 
