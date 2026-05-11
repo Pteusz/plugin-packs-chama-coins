@@ -43,7 +43,11 @@ class CC_Packs_API {
     }
 
     public static function get_packs( object $request ): object {
-        return new WP_REST_Response( [ 'data' => CC_Packs_CRUD::get_all() ], 200 );
+        $packs = array_map( function ( $pack ) {
+            $pack['total_price'] = CC_Packs_CRUD::get_total_price( $pack );
+            return $pack;
+        }, CC_Packs_CRUD::get_all() );
+        return new WP_REST_Response( [ 'data' => $packs ], 200 );
     }
 
     public static function create_pack( object $request ): object {
@@ -52,10 +56,12 @@ class CC_Packs_API {
             return new WP_REST_Response( [ 'error' => 'name, price e dme_ids são obrigatórios' ], 400 );
         }
         $id = CC_Packs_CRUD::create( [
-            'name'    => $body['name'],
-            'price'   => $body['price'],
-            'dme_ids' => $body['dme_ids'],
-            'adm_id'  => get_current_user_id(),
+            'name'           => $body['name'],
+            'price'          => $body['price'],
+            'dme_ids'        => $body['dme_ids'],
+            'coins_amount'   => intval( $body['coins_amount'] ?? 0 ),
+            'coins_platform' => sanitize_text_field( $body['coins_platform'] ?? 'ps' ),
+            'adm_id'         => get_current_user_id(),
         ] );
         if ( ! $id ) return new WP_REST_Response( [ 'error' => 'Erro ao criar pack' ], 500 );
         return new WP_REST_Response( [ 'id' => $id ], 201 );

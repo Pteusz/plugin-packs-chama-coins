@@ -110,7 +110,7 @@ class CC_Packs_Session {
         $total = 0.0;
         foreach ( $composition as $pack_id => $qty ) {
             $pack = CC_Packs_CRUD::get( intval( $pack_id ) );
-            if ( $pack ) $total += floatval( $pack['price'] ) * intval( $qty );
+            if ( $pack ) $total += CC_Packs_CRUD::get_total_price( $pack ) * intval( $qty );
         }
         return $total;
     }

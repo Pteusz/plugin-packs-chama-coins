@@ -1,12 +1,16 @@
 ---
 
-✓ **extensao-schema** concluída
+✓ **extensao-logica** concluída
 
-**Executado:** Modificado `includes/class-activator.php` em três pontos:
-1. `$sql1` em `create_tables()` — inseridas colunas `coins_amount BIGINT UNSIGNED NOT NULL DEFAULT 0` e `coins_platform VARCHAR(10) NOT NULL DEFAULT 'ps'` entre `dme_ids` e `adm_id`
-2. Adicionado método `maybe_migrate()` com `SHOW COLUMNS` + `ALTER TABLE ADD COLUMN` condicional para cada campo
-3. `activate()` chama `self::maybe_migrate()` imediatamente após `self::create_tables()`
+**Executado:**
+- `class-crud.php` — `create()`: adicionados `coins_amount` (`%d`) e `coins_platform` (`%s`) no insert; array de formatos atualizado para `['%s','%f','%s','%d','%s','%d']`
+- `class-crud.php` — `update()`: tratamento condicional de `coins_amount` e `coins_platform`
+- `class-crud.php` — `get()`, `get_all()`, `get_by_adm()`: normalização de `coins_amount` como int e `coins_platform` como string após decode do JSON
+- `class-crud.php` — novo método `get_total_price()` com chamada a `CS_Core::calc()` quando disponível
+- `class-session.php` — `calculate_total()`: substituído `$pack['price']` por `CC_Packs_CRUD::get_total_price($pack)`
+- `class-api.php` — `create_pack()`: `coins_amount` e `coins_platform` adicionados ao array passado para `CRUD::create()`
+- `class-api.php` — `get_packs()`: `array_map` injeta `total_price` em cada pack via `get_total_price()`
 
-**Verificação:** passou — os três critérios satisfeitos
+**Verificação:** passou — todos os 7 critérios satisfeitos
 
-**Próxima fase:** `extensao-logica`
+**Próxima fase:** `extensao-ui`
