@@ -8,6 +8,7 @@ class CC_Packs_Activator {
 
     public static function activate(): void {
         self::create_tables();
+        self::maybe_migrate();
         self::register_wc_product();
     }
 
@@ -21,6 +22,8 @@ class CC_Packs_Activator {
             name VARCHAR(255) NOT NULL,
             price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
             dme_ids JSON NOT NULL,
+            coins_amount   BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            coins_platform VARCHAR(10)     NOT NULL DEFAULT 'ps',
             adm_id INT UNSIGNED NOT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -42,6 +45,18 @@ class CC_Packs_Activator {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql1 );
         dbDelta( $sql2 );
+    }
+
+    private static function maybe_migrate(): void {
+        global $wpdb;
+        $table = $wpdb->prefix . CC_PACKS_TABLE;
+        $cols  = $wpdb->get_col( "SHOW COLUMNS FROM {$table}" );
+        if ( ! in_array( 'coins_amount', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN coins_amount BIGINT UNSIGNED NOT NULL DEFAULT 0 AFTER dme_ids" );
+        }
+        if ( ! in_array( 'coins_platform', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN coins_platform VARCHAR(10) NOT NULL DEFAULT 'ps' AFTER coins_amount" );
+        }
     }
 
     public static function register_wc_product(): void {
