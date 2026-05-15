@@ -127,6 +127,9 @@ class CC_Packs_Admin_Page {
                         <span id="cc-selected-count"></span>
                     </div>
                     <div id="cc-dme-list"></div>
+                    <div id="cc-selected-dmes-panel" class="cc-selected-dmes-panel">
+                        <p class="cc-selected-empty">Nenhum DME selecionado.</p>
+                    </div>
                     <div class="cc-admin-form-actions">
                         <button type="button" id="cc-save-pack" class="cc-admin-btn">Salvar Pack</button>
                         <button type="button" id="cc-cancel-edit" class="cc-admin-btn cc-admin-btn-ghost" style="display:none">Cancelar</button>

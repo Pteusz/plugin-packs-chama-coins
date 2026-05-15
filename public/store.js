@@ -158,6 +158,15 @@
         });
     }
 
+    function normalizeDmeIds(dmeIds) {
+        return (dmeIds || []).map(function (item) {
+            if (typeof item === 'object' && item !== null && item.id) {
+                return { id: String(item.id), qty: parseInt(item.qty) || 1 };
+            }
+            return { id: String(item), qty: 1 };
+        });
+    }
+
     function buildSessionDescription(composition) {
         var parts = [];
         composition.forEach(function (item) {
@@ -166,9 +175,14 @@
 
             var names = [];
             if (feedCache && pack.dme_ids && pack.dme_ids.length) {
-                var ids = pack.dme_ids.map(String);
+                var dmeList = normalizeDmeIds(pack.dme_ids);
+                var ids     = dmeList.map(function (d) { return d.id; });
                 feedCache.forEach(function (d) {
-                    if (ids.indexOf(String(d.id)) !== -1 && d.name) names.push(d.name);
+                    if (ids.indexOf(String(d.id)) !== -1 && d.name) {
+                        var entry = dmeList.find(function (di) { return di.id === String(d.id); });
+                        var qty   = entry ? (entry.qty || 1) : 1;
+                        names.push(qty > 1 ? d.name + ' ×' + qty : d.name);
+                    }
                 });
             }
 
@@ -200,8 +214,6 @@
     function openPackModal(packId) {
         var pack = packsCache.find(function (p) { return String(p.id) === String(packId); });
         if (!pack) return;
-        var dmeIds = (pack.dme_ids || []).map(String);
-
         $('body').addClass('cc-modal-open');
 
         var $overlay = $(
@@ -249,7 +261,9 @@
         });
 
         getFeed().then(function (items) {
-            var found = items.filter(function (d) { return dmeIds.indexOf(String(d.id)) !== -1; });
+            var dmeList   = normalizeDmeIds(pack.dme_ids);
+            var ids       = dmeList.map(function (d) { return d.id; });
+            var found     = items.filter(function (d) { return ids.indexOf(String(d.id)) !== -1; });
             if (!found.length) {
                 var $cc = $('#cc-modal-cards');
                 $cc.empty();
@@ -309,6 +323,12 @@
                     }
 
                     $cont.append($item);
+                    var dmeEntry = dmeList.find(function (d) { return d.id === String(dme.id); });
+                    if (dmeEntry && dmeEntry.qty > 1) {
+                        $item.css('position', 'relative').append(
+                            '<span class="cc-modal-qty-badge">×' + dmeEntry.qty + '</span>'
+                        );
+                    }
                 });
 
                 if (pack.coins_amount > 0) {

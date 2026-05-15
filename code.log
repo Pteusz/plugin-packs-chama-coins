@@ -1,14 +1,13 @@
 ---
 
-✓ **access-gate** concluída
+✓ **feature-dme-qty** concluída
 
 **Executado:**
-1. `plugin-packs-chama-coins.php` — `add_action('init', session_start())` protegido por `headers_sent()` inserido após os `define()`s
-2. `includes/class-activator.php` — `add_option('cc_packs_access_code', '24654785Gm@')` adicionado em `activate()` após `maybe_migrate()`
-3. `admin/class-admin-page.php` — `render()` substituído: verifica `current_user_can('manage_options')`, checa `$_SESSION['cc_packs_gate_ok']`, processa POST com `wp_verify_nonce` + `hash_equals`, retorna `render_access_gate()` se não verificado
-4. `admin/class-admin-page.php` — método `render_access_gate(bool $error)` adicionado com form POST, `wp_nonce_field('cc_gate_submit')`, campo `password` e mensagem de erro condicional
-5. `assets/style.css` — estilos do portão (`.cc-access-gate`, `.cc-access-gate-card`, `.cc-access-gate-input`, `.cc-access-gate-error`, `.cc-access-gate-btn`) adicionados ao final
+- `class-admin-page.php`: painel `#cc-selected-dmes-panel` inserido após `#cc-dme-list`
+- `admin/admin.js`: `selectedDmeIds` → `selectedDmes` (array de `{id, qty}`); helpers `normalizeDmeIds`, `dmeCount`, `escHtml` adicionados globalmente; `renderSelectedPanel` e `updateSelectedBadge` atualizados; handlers de stepper (−/+) e remoção por `data-id`; edit handler usa `normalizeDmeIds`; `loadPacks` usa `dmeCount`
+- `public/store.js`: `normalizeDmeIds` adicionada; `openPackModal` usa `dmeList` normalizado e exibe badge `×N`; `buildSessionDescription` exibe `Name ×N` quando `qty > 1`
+- `assets/style.css`: estilos para `.cc-selected-dmes-panel`, `.cc-selected-dme-item`, `.cc-qty-stepper`, `.cc-qty-btn`, `.cc-qty-value`, `.cc-selected-dme-remove`, `.cc-modal-qty-badge`
 
-**Verificação:** passou — todos os 5 pontos confirmados via grep
+**Verificação:** passou — todos os 15 pontos confirmados por grep.
 
-**Próxima fase:** `null` — sistema completo
+**Próxima fase:** `null` — sistema completo.

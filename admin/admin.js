@@ -7,9 +7,29 @@
     var nonce   = ccPacksAdmin.nonce;
     var sbcFeed = ccPacksAdmin.sbcFeed;
     var editingId      = null;
-    var selectedDmeIds = [];
+    var selectedDmes   = [];
     var feedCache      = null;
     var allFeedItems   = [];
+
+    function normalizeDmeIds(dmeIds) {
+        return (dmeIds || []).map(function (item) {
+            if (typeof item === 'object' && item !== null && item.id) {
+                return { id: String(item.id), qty: parseInt(item.qty) || 1 };
+            }
+            return { id: String(item), qty: 1 };
+        });
+    }
+
+    function dmeCount(dmeIds) {
+        if (!dmeIds || !dmeIds.length) return 0;
+        return dmeIds.reduce(function (sum, d) {
+            return sum + (typeof d === 'object' ? (parseInt(d.qty) || 1) : 1);
+        }, 0);
+    }
+
+    function escHtml(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
     var coinsDebounce = null;
     var csCalcUrl     = (window.ccPacksAdmin && ccPacksAdmin.csCalcUrl) ? ccPacksAdmin.csCalcUrl : null;
 
@@ -118,7 +138,8 @@
 
         $cancel.on('click', function () {
             editingId = null;
-            selectedDmeIds = [];
+            selectedDmes = [];
+            renderSelectedPanel();
             $('#cc-pack-name').val('');
             $('#cc-pack-price').val('');
             $search.val('');
@@ -139,9 +160,9 @@
             var coinsPlatform = $('#cc-pack-coins-platform').val()         || 'ps';
             if (!name)                  { alert('Informe o nome do pack.');    return; }
             if (isNaN(price) || price < 0) { alert('Informe um preço válido.'); return; }
-            if (!selectedDmeIds.length) { alert('Selecione ao menos 1 DME.'); return; }
+            if (!selectedDmes.length) { alert('Selecione ao menos 1 DME.'); return; }
 
-            var data   = { name: name, price: price, dme_ids: selectedDmeIds.slice(), coins_amount: coinsAmount, coins_platform: coinsPlatform };
+            var data   = { name: name, price: price, dme_ids: selectedDmes.map(function (d) { return { id: d.id, qty: d.qty }; }), coins_amount: coinsAmount, coins_platform: coinsPlatform };
             var url    = api + '/packs' + (editingId ? '/' + editingId : '');
             var method = editingId ? 'PUT' : 'POST';
             $save.prop('disabled', true).text('Salvando...');
@@ -152,7 +173,7 @@
                 body:    JSON.stringify(data),
             }).then(function (r) {
                 if (!r.ok) { alert('Erro ao salvar pack.'); $save.prop('disabled', false).text('Salvar Pack'); return; }
-                editingId = null; selectedDmeIds = [];
+                editingId = null; selectedDmes = []; renderSelectedPanel();
                 $('#cc-pack-name').val(''); $('#cc-pack-price').val(''); $search.val('');
                 $cancel.hide();
                 $title.text('Novo Pack');
@@ -195,7 +216,7 @@
                     filtered.forEach(function (dme) {
                         var id      = String(dme.id);
                         var html    = fitCardHtml(cards[id] || '');
-                        var checked = selectedDmeIds.indexOf(id) !== -1;
+                        var checked = selectedDmes.some(function (d) { return d.id === id; });
                         var $wrap   = $(
                             '<div class="cc-admin-dme-card' + (checked ? ' is-selected' : '') + '" data-dme-id="' + id + '">' +
                             (html
@@ -219,21 +240,70 @@
 
         /* Toggle seleção */
         $dmeList.on('click', '.cc-admin-dme-card', function () {
-            var id = String($(this).data('dme-id'));
-            if ($(this).hasClass('is-selected')) {
-                selectedDmeIds = selectedDmeIds.filter(function (v) { return v !== id; });
+            var id  = String($(this).data('dme-id'));
+            var idx = selectedDmes.findIndex(function (d) { return d.id === id; });
+            if (idx !== -1) {
+                selectedDmes.splice(idx, 1);
                 $(this).removeClass('is-selected');
             } else {
-                if (selectedDmeIds.indexOf(id) === -1) selectedDmeIds.push(id);
+                selectedDmes.push({ id: id, qty: 1 });
                 $(this).addClass('is-selected');
             }
+            updateSelectedBadge();
+            renderSelectedPanel();
+        });
+
+        $(document).on('click', '.cc-qty-minus', function () {
+            var id   = String($(this).data('id'));
+            var item = selectedDmes.find(function (d) { return d.id === id; });
+            if (item && item.qty > 1) { item.qty--; renderSelectedPanel(); updateSelectedBadge(); }
+        });
+
+        $(document).on('click', '.cc-qty-plus', function () {
+            var id   = String($(this).data('id'));
+            var item = selectedDmes.find(function (d) { return d.id === id; });
+            if (item) { item.qty++; renderSelectedPanel(); updateSelectedBadge(); }
+        });
+
+        $(document).on('click', '.cc-selected-dme-remove', function () {
+            var id = String($(this).data('id'));
+            selectedDmes = selectedDmes.filter(function (d) { return d.id !== id; });
+            $dmeList.find('[data-dme-id="' + id + '"]').removeClass('is-selected');
+            renderSelectedPanel();
             updateSelectedBadge();
         });
 
         function updateSelectedBadge() {
+            var total = dmeCount(selectedDmes);
             $('#cc-selected-count').text(
-                selectedDmeIds.length ? selectedDmeIds.length + ' DME(s) selecionado(s)' : ''
+                total ? total + ' DME(s) — ' + selectedDmes.length + ' tipo(s)' : ''
             );
+        }
+
+        function renderSelectedPanel() {
+            var $panel = $('#cc-selected-dmes-panel');
+            if (!$panel.length) return;
+            $panel.empty();
+            if (!selectedDmes.length) {
+                $panel.html('<p class="cc-selected-empty">Nenhum DME selecionado.</p>');
+                return;
+            }
+            selectedDmes.forEach(function (sel) {
+                var dme  = allFeedItems.find(function (d) { return String(d.id) === sel.id; });
+                var name = dme ? (dme.name || 'DME #' + sel.id) : 'DME #' + sel.id;
+                var $item = $(
+                    '<div class="cc-selected-dme-item" data-id="' + sel.id + '">' +
+                    '  <span class="cc-selected-dme-name">' + escHtml(name) + '</span>' +
+                    '  <div class="cc-qty-stepper">' +
+                    '    <button type="button" class="cc-qty-btn cc-qty-minus" data-id="' + sel.id + '">−</button>' +
+                    '    <span class="cc-qty-value">' + sel.qty + '</span>' +
+                    '    <button type="button" class="cc-qty-btn cc-qty-plus" data-id="' + sel.id + '">+</button>' +
+                    '  </div>' +
+                    '  <button type="button" class="cc-selected-dme-remove" data-id="' + sel.id + '">×</button>' +
+                    '</div>'
+                );
+                $panel.append($item);
+            });
         }
 
         /* ── Lista de packs como cards com kebab ── */
@@ -254,7 +324,7 @@
                             '  <div class="cc-admin-pack-card-body">' +
                             '    <span class="cc-admin-pack-card-name">' + pack.name + '</span>' +
                             '    <span class="cc-admin-pack-card-price">R$ ' + price + '</span>' +
-                            '    <span class="cc-admin-pack-card-count">' + (pack.dme_ids ? pack.dme_ids.length : 0) + ' DMEs</span>' +
+                            '    <span class="cc-admin-pack-card-count">' + dmeCount(pack.dme_ids || []) + ' DMEs</span>' +
                             (pack.coins_amount > 0 ? '    <span class="cc-admin-pack-card-coins">🪙 ' + formatCoins(pack.coins_amount) + ' (' + (pack.coins_platform || 'ps').toUpperCase() + ')</span>' : '') +
                             '  </div>' +
                             '  <div class="cc-admin-pack-kebab-wrap">' +
@@ -288,7 +358,8 @@
             e.stopPropagation();
             var pack = $(this).data('pack');
             editingId      = pack.id;
-            selectedDmeIds = (pack.dme_ids || []).map(String);
+            selectedDmes = normalizeDmeIds(pack.dme_ids || []);
+            renderSelectedPanel();
             $('#cc-pack-name').val(pack.name);
             $('#cc-pack-price').val(pack.price);
             $('#cc-pack-coins').val(pack.coins_amount > 0 ? formatCoins(pack.coins_amount) : '');
