@@ -131,8 +131,9 @@
             return;
         }
         getFeed().then(function (items) {
-            var ids   = dmeIds.map(String);
-            var found = items.filter(function (d) { return ids.indexOf(String(d.id)) !== -1; });
+            var dmeList = normalizeDmeIds(dmeIds);
+            var ids     = dmeList.map(function (d) { return d.id; });
+            var found   = items.filter(function (d) { return ids.indexOf(String(d.id)) !== -1; });
             var $wrap = $('.cc-pack-thumbs[data-pack-id="' + packId + '"]');
             $wrap.empty();
 
